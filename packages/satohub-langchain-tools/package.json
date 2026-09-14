@@ -1,0 +1,56 @@
+{
+  "name": "satohub-langchain-tools",
+  "version": "0.1.0",
+  "description": "LangChain.js tools for Sato Hub: search the scored onchain-agent index, run a Preflight check before installing or trading, get a swap-venue recommendation with the fee disclosed, and turn a goal into a build plan of real listings. Read-only and non-custodial.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "langchain",
+    "langchainjs",
+    "tools",
+    "satohub",
+    "onchain-agents",
+    "crypto",
+    "web3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satohubai/sato-hub-integrations.git",
+    "directory": "packages/satohub-langchain-tools"
+  },
+  "homepage": "https://satohub.ai/mcp",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test '.test-build/test/*.test.js'"
+  },
+  "dependencies": {
+    "satohub-core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@langchain/core": ">=0.3.0",
+    "zod": "^3.23.0 || ^4.0.0"
+  },
+  "devDependencies": {
+    "@langchain/core": "^0.3.72",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

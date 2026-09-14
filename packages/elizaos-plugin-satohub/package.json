@@ -1,0 +1,79 @@
+{
+  "name": "elizaos-plugin-satohub",
+  "version": "0.1.0",
+  "description": "elizaOS plugin for Sato Hub: search the scored onchain-agent index, run a Preflight check before installing or trading, get a swap-venue recommendation with the fee disclosed, and turn a goal into a build plan of real listings. Read-only and non-custodial.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "elizaos",
+    "elizaos-plugin",
+    "plugin",
+    "satohub",
+    "onchain-agents",
+    "crypto",
+    "web3",
+    "mcp"
+  ],
+  "agentConfig": {
+    "pluginType": "elizaos:plugin:1.0.0",
+    "pluginParameters": {
+      "SATOHUB_BASE_URL": {
+        "type": "string",
+        "required": false,
+        "description": "Origin to call. Defaults to https://satohub.ai"
+      },
+      "SATOHUB_TIMEOUT_MS": {
+        "type": "string",
+        "required": false,
+        "description": "Per-request deadline in milliseconds. Default 20000."
+      },
+      "SATOHUB_VERIFY": {
+        "type": "string",
+        "required": false,
+        "description": "Ed25519 response-signature handling: throw (default), report, or off."
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satohubai/sato-hub-integrations.git",
+    "directory": "packages/elizaos-plugin-satohub"
+  },
+  "homepage": "https://satohub.ai/mcp",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test '.test-build/test/*.test.js'"
+  },
+  "dependencies": {
+    "satohub-core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@elizaos/core": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@elizaos/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

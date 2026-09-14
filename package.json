@@ -1,0 +1,23 @@
+{
+  "name": "sato-hub-integrations",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sato Hub as a first-class plugin inside the agent frameworks people already run.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run build && npm run test --workspaces --if-present",
+    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

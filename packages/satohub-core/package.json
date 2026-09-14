@@ -1,0 +1,59 @@
+{
+  "name": "satohub-core",
+  "version": "0.1.0",
+  "description": "Thin, zero-dependency client for the public Sato Hub surfaces — the scored onchain-agent index, Preflight, Sato Route and the Sato Bot build plan — with the Ed25519 response-signature verifier included.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas.d.ts",
+      "default": "./dist/schemas.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "satohub",
+    "onchain-agents",
+    "crypto",
+    "mcp",
+    "preflight",
+    "ed25519"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satohubai/sato-hub-integrations.git",
+    "directory": "packages/satohub-core"
+  },
+  "homepage": "https://satohub.ai/mcp",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test '.test-build/test/*.test.js'"
+  },
+  "peerDependencies": {
+    "zod": "^3.23.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
