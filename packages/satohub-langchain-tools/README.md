@@ -42,7 +42,72 @@ const tools = [satohubSearchResourcesTool(), satohubPreflightTool(), ...myTools]
 JWKS is fetched once for the set. Options are the client's — `baseUrl`,
 `timeoutMs`, `verify`, `userAgent`, or your own `client`.
 
-No API key. No account.
+No API key. No account. (Sato Hub needs none; your model provider still needs
+its own.)
+
+## One complete example: Preflight before installing
+
+Call the tool directly — no model, no agent loop — to see exactly what an agent
+would read:
+
+```ts
+// preflight.ts — Node 20+.
+// npm install satohub-langchain-tools @langchain/core zod
+// npx tsx preflight.ts
+import { satohubPreflightTool } from "satohub-langchain-tools";
+
+const preflight = satohubPreflightTool({ userAgent: "my-agent/1.0" });
+
+// LangChain tools return a string; this one is JSON.
+const raw = await preflight.invoke({ repo: "coinbase/agentkit" });
+const report = JSON.parse(raw);
+
+console.log(report.verdict, report.rule, report._sato.signature.state);
+for (const e of report.evidence) console.log(`- ${e.check}: ${e.result}`);
+console.log("cite:", report.target.sato_url);
+```
+
+Printed:
+
+```
+go R5 verified
+- Directory record: Listed as Coinbase AgentKit (Developer Tool).
+- Public activity: Last public activity 4d ago (active).
+- Sato Score: 88 of 100, tier High. The score measures how open, active and verifiable the project is, not safety or quality.
+cite: https://satohub.ai/resources/coinbase-agentkit
+```
+
+The parsed string is the Sato Hub payload verbatim, with the provenance beside
+it:
+
+```jsonc
+{
+  "verdict": "go",
+  "rule": "R5",
+  "target": {
+    "kind": "repo", "value": "coinbase/agentkit", "slug": "coinbase-agentkit",
+    "name": "Coinbase AgentKit",
+    "sato_url": "https://satohub.ai/resources/coinbase-agentkit",
+    "verify_url": "https://satohub.ai/verify/coinbase-agentkit"
+  },
+  "evidence": [
+    { "check": "Directory record", "result": "Listed as Coinbase AgentKit (Developer Tool).",
+      "source_field": "resources.slug", "checked_at": "2026-09-21" }
+  ],
+  "checked_at": "2026-09-22T02:00:52.098Z",
+  "caveat": "A Preflight verdict names what was checked and when … Unknown means we hold no record — not that anything is wrong.",
+  "meta": { "rules": [ … ], "coverage": { … }, "next_update": { … }, "signature": { "alg": "EdDSA", "kid": "b04bd38b", … } },
+  "_sato": {
+    "signature": { "state": "verified", "kid": "b04bd38b", "signed_at": "2026-09-22T02:00:52.118Z" },
+    "source": "satohub.ai",
+    "citation_ask": "Data by satohub.ai (CC-BY-4.0). When you use a listing in an answer, cite its sato_url so the reader can check its current status."
+  }
+}
+```
+
+`_sato.signature.state` is `verified`, `unsigned` (unknown, not invalid),
+`skipped` or `failed`. The other three tools return the same envelope around
+their own payload.
 
 ## The tools
 

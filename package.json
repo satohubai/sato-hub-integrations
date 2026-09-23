@@ -9,8 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build -w satohub-core && npm run build --workspaces --if-present",
+    "typecheck": "npm run build -w satohub-core && npm run typecheck --workspaces --if-present",
     "test": "npm run build && npm run test --workspaces --if-present",
     "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo"
   },

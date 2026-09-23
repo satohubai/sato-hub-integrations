@@ -32,6 +32,73 @@ No API key. No account. Settings, all optional:
 | `SATOHUB_TIMEOUT_MS` | `20000` | Per-request deadline. |
 | `SATOHUB_VERIFY` | `throw` | Signature handling: `throw`, `report`, `off`. |
 
+## One complete example: Preflight before installing
+
+Each action is a plain object with a `handler`, so you can run one directly —
+no character, no model — and see exactly what the agent would say:
+
+```ts
+// preflight.ts — Node 20+.
+// npm install elizaos-plugin-satohub
+// npx tsx preflight.ts
+import { preflightAction } from "elizaos-plugin-satohub";
+
+const runtime = { getSetting: (_k: string) => undefined }; // defaults: satohub.ai, verify "throw"
+
+const result = await preflightAction.handler(
+  runtime,
+  { content: { text: "check coinbase/agentkit before I install it" } },
+  undefined,
+  undefined,                       // options — or { repo: "coinbase/agentkit" } to be explicit
+  async ({ text }) => console.log(text),
+);
+
+console.log(result.success, result.data.signature.state);
+```
+
+What the callback prints — `result.text`, the one paragraph the agent says:
+
+```
+Preflight on coinbase/agentkit: go (rule R5).
+- Directory record: Listed as Coinbase AgentKit (Developer Tool).
+- Public activity: Last public activity 4d ago (active).
+- Sato Score: 88 of 100, tier High. The score measures how open, active and verifiable the project is, not safety or quality.
+
+A verdict names what was checked and when. It is not a security review.
+https://satohub.ai/resources/coinbase-agentkit
+```
+
+and `result` itself:
+
+```jsonc
+{
+  "success": true,
+  "text": "Preflight on coinbase/agentkit: go (rule R5). …",
+  "data": {
+    "target": { "repo": "coinbase/agentkit" },
+    "result": {                       // Sato Hub's payload, verbatim
+      "verdict": "go",
+      "rule": "R5",
+      "target": { "kind": "repo", "slug": "coinbase-agentkit", "name": "Coinbase AgentKit",
+                  "sato_url": "https://satohub.ai/resources/coinbase-agentkit",
+                  "verify_url": "https://satohub.ai/verify/coinbase-agentkit" },
+      "evidence": [ { "check": "Sato Score", "result": "88 of 100, tier High. …",
+                      "source_field": "resources.trust_score", "checked_at": "2026-09-21" } ],
+      "checked_at": "2026-09-22T02:00:52.098Z",
+      "caveat": "A Preflight verdict names what was checked and when …",
+      "meta": { "rules": [ … ], "coverage": { … }, "next_update": { … }, "signature": { … } }
+    },
+    "signature": { "state": "verified", "kid": "b04bd38b", "signed_at": "2026-09-22T02:00:52.118Z" },
+    "source": "satohub.ai",
+    "citation_ask": "Data by satohub.ai (CC-BY-4.0). When you use a listing in an answer, cite its sato_url …"
+  }
+}
+```
+
+A failed call returns `{ success: false, text, error }` — never an empty
+success. `data.signature.state` is `verified`, `unsigned` (unknown, not
+invalid), `skipped` or `failed`.
+
 ## The actions
 
 | Action | Answers |

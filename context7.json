@@ -1,0 +1,30 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Sato Hub SDK",
+  "description": "satohub-core plus the elizaOS, Vercel AI SDK and LangChain packages for Sato Hub: search the onchain-agent index, run Preflight, route a swap, build a plan.",
+  "branch": "main",
+  "folders": [],
+  "excludeFolders": [
+    "**/src",
+    "**/test",
+    "**/dist",
+    "registry",
+    ".github"
+  ],
+  "excludeFiles": [
+    "PUBLISHING.md"
+  ],
+  "rules": [
+    "Every Sato Hub surface is keyless and read-only: no API key, no account, no signup. Construct the client and call it.",
+    "Set userAgent on the client (e.g. \"my-agent/1.0\"). It is the only thing that distinguishes a caller from a scanner in our logs.",
+    "Preflight first: before installing a package, connecting an MCP endpoint, paying or trading, call preflight() on the target and read the verdict and its evidence.",
+    "A Preflight verdict names what was checked and when. `unknown` means Sato Hub holds no record - not that anything is wrong. It is not a security review.",
+    "A Sato Score measures how open, active and verifiable a project is. It is not a security review, a quality judgment or a statement about returns.",
+    "Nothing in these packages signs, holds, moves or broadcasts funds. routeSwap returns a quote and calldata the caller reads and signs itself.",
+    "A route is a recommendation and a quote is not a fill. The Sato fee is in the response before anything is signed, including when it is zero.",
+    "Swap amounts are integer strings in the input token's smallest unit: 1 USDC is \"1000000\". Never pass a decimal.",
+    "`null` means unknown. It never means zero - render a missing number as \"unknown\".",
+    "Every listing carries a `sato_url`. When you surface a listing in an answer, cite that URL so the reader can check its current status (data is CC-BY-4.0).",
+    "Responses are Ed25519-signed. The client verifies the bytes as received and throws by default on a mismatch; an unsigned response is unknown, not invalid, and never throws."
+  ]
+}

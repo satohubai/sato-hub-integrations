@@ -21,15 +21,100 @@ import { SatoHubClient } from "satohub-core";
 const sato = new SatoHubClient({ userAgent: "my-agent/1.0" });
 
 const { data, signature } = await sato.preflight({ repo: "coinbase/agentkit" });
-console.log(data.verdict, signature.state); // "go" "verified"
+console.log((data as { verdict: string }).verdict, signature.state); // "go" "verified"
+```
 
+The complete version of that — with the response it returns — is the next
+section.
+
+Please set `userAgent`. It is the only thing that distinguishes a caller from a
+scanner.
+
+## One complete example: run Preflight before you install
+
+Preflight is the call to reach for first. Give it one target — a repo, an npm
+package, an MCP endpoint, an ERC-8004 agent, a token or a skill — and it answers
+with what is on record about it, and when each thing was checked, *before* you
+install, connect, pay or trade.
+
+```ts
+// preflight.ts — runs on Node 20+ with no key and no account.
+// npm install satohub-core && npx tsx preflight.ts
+import { SatoHubClient } from "satohub-core";
+
+const sato = new SatoHubClient({ userAgent: "my-agent/1.0" });
+
+const { data, signature } = await sato.preflight({ repo: "coinbase/agentkit" });
+const report = data as {
+  verdict: "go" | "caution" | "stop" | "unknown";
+  rule: string;
+  target: { kind: string; value: string; slug: string; name: string; sato_url: string; verify_url?: string };
+  evidence: Array<{ check: string; result: string; source_field: string; checked_at: string }>;
+  checked_at: string;
+  caveat: string;
+};
+
+console.log(report.verdict, report.rule, signature.state);
+for (const e of report.evidence) console.log(`- ${e.check}: ${e.result}`);
+console.log("cite:", report.target.sato_url);
+```
+
+What comes back (an actual response, trimmed — every field below is real):
+
+```jsonc
+{
+  "verdict": "go",
+  "rule": "R5",
+  "target": {
+    "kind": "repo",
+    "value": "coinbase/agentkit",
+    "slug": "coinbase-agentkit",
+    "name": "Coinbase AgentKit",
+    "sato_url": "https://satohub.ai/resources/coinbase-agentkit",
+    "verify_url": "https://satohub.ai/verify/coinbase-agentkit"
+  },
+  "evidence": [
+    { "check": "Directory record", "result": "Listed as Coinbase AgentKit (Developer Tool).",
+      "source_field": "resources.slug", "checked_at": "2026-09-21" },
+    { "check": "Public activity", "result": "Last public activity 4d ago (active).",
+      "source_field": "resources.last_activity_at", "checked_at": "2026-09-17T19:33:38.000Z" },
+    { "check": "Sato Score", "result": "88 of 100, tier High. The score measures how open, active and verifiable the project is, not safety or quality.",
+      "source_field": "resources.trust_score", "checked_at": "2026-09-21" }
+  ],
+  "checked_at": "2026-09-22T02:00:52.098Z",
+  "caveat": "A Preflight verdict names what was checked and when … Unknown means we hold no record — not that anything is wrong.",
+  "meta": {
+    "rules": [ … ],
+    "coverage": { "daily": { "finished_at": "…", "steps_ok": 40, "steps_failed": [] }, "weekly": { … } },
+    "next_update": { "daily": "…", "weekly": "…" },
+    "signature": { "alg": "EdDSA", "kid": "b04bd38b", "sig": "…", "signed_at": "…",
+                   "jwks_url": "https://satohub.ai/.well-known/jwks.json" }
+  }
+}
+```
+
+and the `signature` returned beside it:
+
+```jsonc
+{ "state": "verified", "kid": "b04bd38b", "signed_at": "2026-09-22T02:00:52.118Z" }
+```
+
+`verdict` is one of `go`, `caution`, `stop` or `unknown`, `rule` names the rule
+that produced it, and `evidence` is the whole basis for it — each row saying
+which field was read and when. `unknown` means Sato Hub holds no record, not
+that anything is wrong. `data` is typed `unknown` on purpose: the wire shape is
+Sato Hub's, not ours, so you narrow it yourself (or use the Zod schemas below).
+
+The other three calls have the same shape — `{ data, signature }`:
+
+```ts
 await sato.searchResources({ query: "x402 payment rail", chain: "Base", limit: 5 });
 await sato.routeSwap({ chain: "Base", token_in: "USDC", token_out: "WETH", amount: "1000000" });
 await sato.buildPlan({ goal: "a Base trading agent that swaps USDC to ETH on a signal" });
 ```
 
-Please set `userAgent`. It is the only thing that distinguishes a caller from a
-scanner.
+`amount` is an integer string in the input token's smallest unit — 1 USDC is
+`"1000000"`, never `1` and never `"1.0"`.
 
 ## Which wire, and why
 
