@@ -38,7 +38,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test '.test-build/test/*.test.js'"
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/"
   },
   "peerDependencies": {
     "zod": "^3.23.0 || ^4.0.0"
