@@ -1,7 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Sato Hub SDK",
-  "description": "satohub-core plus the elizaOS, Vercel AI SDK, LangChain and GOAT SDK packages for Sato Hub: search the onchain-agent index, run Preflight, route a swap, build a plan.",
+  "description": "satohub-core plus the elizaOS, Vercel AI SDK, LangChain, GOAT SDK and Coinbase AgentKit packages for Sato Hub: search the onchain-agent index, run Preflight, route a swap, build a plan.",
   "branch": "main",
   "folders": [],
   "excludeFolders": [
