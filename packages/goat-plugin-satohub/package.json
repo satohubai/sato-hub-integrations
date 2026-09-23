@@ -1,0 +1,59 @@
+{
+  "name": "goat-plugin-satohub",
+  "version": "0.1.0",
+  "description": "GOAT SDK plugin for Sato Hub: run a Preflight check on a repo, package, MCP endpoint or token before your agent installs, connects to or trades it, and search the scored onchain-agent index. Keyless, read-only, never signs or moves funds.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "goat",
+    "goat-sdk",
+    "goat-plugin",
+    "ai",
+    "agents",
+    "web3",
+    "satohub",
+    "preflight",
+    "onchain-agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satohubai/sato-hub-integrations.git",
+    "directory": "packages/goat-plugin-satohub"
+  },
+  "homepage": "https://satohub.ai/preflight",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
+  },
+  "dependencies": {
+    "satohub-core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@goat-sdk/core": "^0.5.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@goat-sdk/core": "^0.5.0",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

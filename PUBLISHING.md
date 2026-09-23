@@ -19,6 +19,21 @@ npm publish --access public -w satohub-ai-sdk-tools
 npm publish --access public -w satohub-langchain-tools
 ```
 
+**GOAT SDK (added 2026-09-22, not yet published).** `goat-plugin-satohub` was
+free on npm when written (`registry.npmjs.org` answered 404). It needs
+`satohub-core` on npm first, which it already is:
+
+```sh
+npm run build
+npm publish --access public -w goat-plugin-satohub
+```
+
+There is no upstream PR to follow it: `goat-sdk/goat` was marked archived on
+2026-07-02 (README banner: "no issues, pull requests, or updates will be
+accepted") and its last merged PR was #523 on 2025-08-19. Publishing to npm is
+the whole of the distribution. `@goat-sdk/core` still sees roughly 1.6k
+downloads a week (api.npmjs.org, week to 2026-09-21), which is the audience.
+
 `npm pack --dry-run -w <pkg>` first if you want to see exactly what ships:
 `dist/`, `README.md`, `LICENSE`, nothing else.
 
