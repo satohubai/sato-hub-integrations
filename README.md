@@ -16,6 +16,7 @@ can reach them without anyone writing a fetch wrapper first.
 | [`elizaos-plugin-satohub`](packages/elizaos-plugin-satohub) | elizaOS | `npm i elizaos-plugin-satohub` |
 | [`satohub-ai-sdk-tools`](packages/satohub-ai-sdk-tools) | Vercel AI SDK | `npm i satohub-ai-sdk-tools` |
 | [`satohub-langchain-tools`](packages/satohub-langchain-tools) | LangChain.js | `npm i satohub-langchain-tools` |
+| [`goat-plugin-satohub`](packages/goat-plugin-satohub) | GOAT SDK | `npm i goat-plugin-satohub` — Preflight + search only |
 | [`satohub-core`](packages/satohub-core) | anything with `fetch` | `npm i satohub-core` |
 | [`examples/claude-agent-sdk`](examples/claude-agent-sdk) | Claude Agent SDK | config only — no package |
 | [`examples/openai-agents-sdk`](examples/openai-agents-sdk) | OpenAI Agents SDK | config only — no package |
