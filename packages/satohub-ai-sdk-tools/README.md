@@ -14,7 +14,7 @@ Read-only, keyless, non-custodial.
 npm install satohub-ai-sdk-tools
 ```
 
-Peer dependencies: `ai` (v5) and `zod`.
+Peer dependencies: `ai` (v5, v6 or v7) and `zod`.
 
 ```ts
 import { generateText } from "ai";
