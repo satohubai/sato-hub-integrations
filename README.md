@@ -32,7 +32,7 @@ Hub serves MCP; a package between them would be a wrapper around a URL.
 | **route_swap** | Which venue would you route this swap to, on what readings, and what is the fee? |
 | **build_plan** | Here is my goal in plain words — what is the stack, and what is the first action? |
 
-All four are read-only. All 28 MCP tools are at
+All four are read-only. All 32 MCP tools are at
 [`https://satohub.ai/mcp`](https://satohub.ai/mcp) if you want the rest.
 
 ## What these packages do, and do not
