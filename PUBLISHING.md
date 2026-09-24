@@ -34,6 +34,22 @@ accepted") and its last merged PR was #523 on 2025-08-19. Publishing to npm is
 the whole of the distribution. `@goat-sdk/core` still sees roughly 1.6k
 downloads a week (api.npmjs.org, week to 2026-09-21), which is the audience.
 
+**Coinbase AgentKit (added 2026-09-23, not yet published).** `agentkit-satohub`
+was free on npm when written (`registry.npmjs.org` answered 404). It depends on
+`satohub-core@^0.1.0` (already published) and peers on `@coinbase/agentkit`
+`^0.10.0` — 0.10.4 is both npm `latest` and the version most installs use.
+
+```sh
+npm run build
+npm publish --access public -w agentkit-satohub
+```
+
+There is no upstream PR to follow it yet. `coinbase/agentkit` accepts
+third-party action providers by PR in principle, but none has been merged since
+2026-03-17 (dTelecom, #982), and npm `latest` (0.10.4) dates from 2025-12-19. A
+PR in their layout is prepared separately; it does not conflict with this
+package.
+
 `npm pack --dry-run -w <pkg>` first if you want to see exactly what ships:
 `dist/`, `README.md`, `LICENSE`, nothing else.
 
