@@ -8,8 +8,8 @@ payment rails, ERC-8004 identity, trading venues, onchain data, agent skills —
 rebuilds the index daily from public evidence, and scores every listing on how
 open, active and verifiable it is.
 
-This repository packages four of those calls for four frameworks, so an agent
-can reach them without anyone writing a fetch wrapper first.
+This repository packages four of those calls for the agent frameworks below, so
+an agent can reach them without anyone writing a fetch wrapper first.
 
 | Package | Framework | Install |
 |---|---|---|
@@ -17,6 +17,7 @@ can reach them without anyone writing a fetch wrapper first.
 | [`satohub-ai-sdk-tools`](packages/satohub-ai-sdk-tools) | Vercel AI SDK | `npm i satohub-ai-sdk-tools` |
 | [`satohub-langchain-tools`](packages/satohub-langchain-tools) | LangChain.js | `npm i satohub-langchain-tools` |
 | [`goat-plugin-satohub`](packages/goat-plugin-satohub) | GOAT SDK | `npm i goat-plugin-satohub` — Preflight + search only |
+| [`agentkit-satohub`](packages/agentkit-satohub) | Coinbase AgentKit | `npm i agentkit-satohub` — Preflight + search only |
 | [`satohub-core`](packages/satohub-core) | anything with `fetch` | `npm i satohub-core` |
 | [`examples/claude-agent-sdk`](examples/claude-agent-sdk) | Claude Agent SDK | config only — no package |
 | [`examples/openai-agents-sdk`](examples/openai-agents-sdk) | OpenAI Agents SDK | config only — no package |
