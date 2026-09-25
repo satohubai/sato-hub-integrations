@@ -21,6 +21,7 @@ an agent can reach them without anyone writing a fetch wrapper first.
 | [`satohub-core`](packages/satohub-core) | anything with `fetch` | `npm i satohub-core` |
 | [`examples/claude-agent-sdk`](examples/claude-agent-sdk) | Claude Agent SDK | config only — no package |
 | [`examples/openai-agents-sdk`](examples/openai-agents-sdk) | OpenAI Agents SDK | config only — no package |
+| [`examples/base-ts-agent-starter`](examples/base-ts-agent-starter) | TypeScript on Base, viem | runnable starter: Preflight before install, a policy check, a quote. Holds no key |
 
 Two of those rows are deliberately not packages. Both SDKs speak MCP, and Sato
 Hub serves MCP; a package between them would be a wrapper around a URL.

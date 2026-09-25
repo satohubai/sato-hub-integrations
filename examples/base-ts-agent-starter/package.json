@@ -1,0 +1,26 @@
+{
+  "name": "base-ts-agent-starter",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A TypeScript agent on Base that reads market data, asks for a swap quote under a spending policy, and checks its own dependencies with Sato Hub Preflight before installing them. It holds no key and signs nothing.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "preflight": "node scripts/preflight-deps.mjs",
+    "setup": "node scripts/preflight-deps.mjs && npm install --no-fund --no-audit",
+    "start": "tsx src/agent.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "satohub-core": "^0.1.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
