@@ -61,3 +61,18 @@ export const SearchResourcesSchema = z
 
 export type PreflightArgs = z.infer<typeof PreflightSchema>;
 export type SearchResourcesArgs = z.infer<typeof SearchResourcesSchema>;
+
+export const CheckInstallSchema = z
+  .object({
+    input: z
+      .string()
+      .min(1)
+      .max(4000)
+      .describe(
+        "The install command exactly as it would run (e.g. 'npm i @goat-sdk/core', 'uvx mcp-server-x', 'claude mcp add …'), or an MCP JSON config block.",
+      ),
+  })
+  .strip()
+  .describe("Instructions for checking what an install does with keys and money");
+
+export type CheckInstallArgs = z.infer<typeof CheckInstallSchema>;

@@ -9,8 +9,10 @@
  */
 
 import { createToolParameters } from "@goat-sdk/core";
-import { preflightSchema, searchResourcesSchema } from "satohub-core/schemas";
+import { checkInstallSchema, preflightSchema, searchResourcesSchema } from "satohub-core/schemas";
 
 export class PreflightParameters extends createToolParameters(preflightSchema) {}
 
 export class SearchResourcesParameters extends createToolParameters(searchResourcesSchema) {}
+
+export class CheckInstallParameters extends createToolParameters(checkInstallSchema) {}

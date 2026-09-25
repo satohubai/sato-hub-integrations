@@ -96,11 +96,11 @@ const UNKNOWN = {
 
 // ── registration ───────────────────────────────────────────────────────────
 
-test("GOAT reads exactly two tools off the decorators, in a stable order", async () => {
+test("GOAT reads exactly three tools off the decorators, in a stable order", async () => {
     const { tools } = await pluginTools(mockFetch(() => json({})));
     assert.deepEqual(
         tools.map((t) => t.name),
-        ["satohub_preflight", "satohub_search_resources"],
+        ["satohub_preflight", "satohub_check_install", "satohub_search_resources"],
     );
 });
 
@@ -294,4 +294,17 @@ test("search: a network failure is reported as a failure", async () => {
         async () => byName("satohub_search_resources").execute({ query: "x402" }),
         SatohubRequestError,
     );
+});
+
+test("check_install: one POST to /api/check/install with only the command; wallet untouched", async () => {
+    const log: Call[] = [];
+    const body = { schema: "sato.custody/v1", subjects: [], unresolved: [], has_observed_key_egress: false };
+    const { byName, wallet } = await pluginTools(mockFetch(() => json(body), log));
+    const out = (await byName("satohub_check_install").execute({ input: "uvx mcp-server-x" })) as Record<string, unknown>;
+    assert.equal(log.length, 1);
+    assert.equal(nth(log, 0).method, "POST");
+    assert.equal(nth(log, 0).url, "https://satohub.ai/api/check/install");
+    assert.deepEqual(JSON.parse(nth(log, 0).body ?? "{}"), { command: "uvx mcp-server-x" });
+    assert.equal(out.has_observed_key_egress, false);
+    assert.deepEqual(wallet.used, []);
 });
