@@ -59,3 +59,13 @@ export type SearchResourcesArgs = z.infer<typeof searchResourcesSchema>;
 export type PreflightArgs = z.infer<typeof preflightSchema>;
 export type RouteSwapArgs = z.infer<typeof routeSwapSchema>;
 export type BuildPlanArgs = z.infer<typeof buildPlanSchema>;
+
+export const checkInstallSchema = z.object({
+  input: z
+    .string()
+    .min(1)
+    .max(4000)
+    .describe("The install command exactly as it would run (e.g. 'npm i @goat-sdk/core', 'uvx mcp-server-x', 'claude mcp add …'), or an MCP JSON config block."),
+});
+
+export type CheckInstallArgs = z.infer<typeof checkInstallSchema>;

@@ -19,6 +19,7 @@
  * sign itself; a route that is never signed costs nothing.
  */
 
+import type { CheckResponse, CustodySubjectKind, InstallCheckResponse } from "./custody.js";
 import { verifyBodySignature, verifyResponseSignature, type Jwks, type VerifyResult } from "./verify.js";
 
 export const DEFAULT_BASE_URL = "https://satohub.ai";
@@ -195,6 +196,28 @@ export class SatoHubClient {
     return this.getJson("/api/satobot/plan", prune(input));
   }
 
+  /**
+   * Sato Check: the four answers about one thing an agent is about to install,
+   * connect to, load or pay — does it take your key, does your key leave, can
+   * it move funds on its own, what changed. `unknown` is an answer, not a
+   * warning. A profile describes; it is not a safety rating.
+   */
+  async checkTarget(target: string, kind?: CustodySubjectKind): Promise<SatoResponse<CheckResponse>> {
+    if (!target?.trim()) throw new Error("target is required.");
+    return this.getJson("/api/check", prune({ target, kind })) as Promise<SatoResponse<CheckResponse>>;
+  }
+
+  /**
+   * Sato Check for an install command (`npm i x`, `uvx y`, `claude mcp add …`)
+   * or an MCP JSON config block. Only the text you pass is sent.
+   */
+  async checkInstall(commandOrConfig: string): Promise<SatoResponse<InstallCheckResponse>> {
+    const input = commandOrConfig?.trim();
+    if (!input) throw new Error("command or config is required.");
+    const body = input.startsWith("{") ? { config: input } : { command: input };
+    return this.postJson("/api/check/install", body) as Promise<SatoResponse<InstallCheckResponse>>;
+  }
+
   // ── wire ─────────────────────────────────────────────────────────────────
 
   private headers(extra: Record<string, string> = {}): Record<string, string> {
@@ -212,6 +235,21 @@ export class SatoHubClient {
     const res = await this.doFetch(url.toString(), { headers: this.headers(), signal: this.signal() });
     const text = await res.text();
     if (!res.ok) throw new SatoHttpError(res.status, text.slice(0, 2000), url.toString());
+    const signature = await this.checkHeaderSignature(text, res.headers);
+    return { data: JSON.parse(text) as unknown, signature };
+  }
+
+  /** A REST POST, read the same way as `getJson`: bytes, verify, parse. */
+  private async postJson(path: string, body: Record<string, unknown>): Promise<SatoResponse<unknown>> {
+    const url = this.baseUrl + path;
+    const res = await this.doFetch(url, {
+      method: "POST",
+      headers: this.headers({ "content-type": "application/json" }),
+      body: JSON.stringify(body),
+      signal: this.signal(),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new SatoHttpError(res.status, text.slice(0, 2000), url);
     const signature = await this.checkHeaderSignature(text, res.headers);
     return { data: JSON.parse(text) as unknown, signature };
   }
