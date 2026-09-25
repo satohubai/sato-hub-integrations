@@ -134,14 +134,14 @@ const UNKNOWN = {
 
 // ── registration ───────────────────────────────────────────────────────────
 
-test("AgentKit.from registers exactly two actions, prefixed in AgentKit's convention", async () => {
+test("AgentKit.from registers exactly three actions, prefixed in AgentKit's convention", async () => {
   const agentkit = await AgentKit.from({
     walletProvider: new RecordingWallet(),
     actionProviders: [provider(mockFetch(() => json({})))],
   });
   assert.deepEqual(
     agentkit.getActions().map((a) => a.name),
-    ["SatohubActionProvider_preflight", "SatohubActionProvider_search_resources"],
+    ["SatohubActionProvider_preflight", "SatohubActionProvider_check_install", "SatohubActionProvider_search_resources"],
   );
 });
 
@@ -472,4 +472,29 @@ test("search: a JSON-RPC error, a tool error, an HTTP error and a network error 
     assert.equal(out.resources, undefined);
     assert.match(String(out.error), /not an 'unknown' verdict and not an empty result/);
   }
+});
+
+test("check_install posts the command and returns the four answers", async () => {
+  const log: Call[] = [];
+  const fetch = mockFetch(() =>
+    json({
+      schema: "sato.custody/v1",
+      subjects: [
+        {
+          subject: { kind: "package", id: "npm:x", name: "x", version: "1.0.0", digest: null },
+          summary: { check_url: "https://satohub.ai/check/package/npm%3Ax" },
+          answers: { key_access: "a", key_egress: "b", fund_actions: "c", changes: "d" },
+        },
+      ],
+      unresolved: [],
+      has_observed_key_egress: false,
+    }),
+  log);
+  const { byName, wallet } = await actions(fetch);
+  const out = await run(byName("check_install"), { input: "npm i x" });
+  assert.equal(out.success, true);
+  assert.equal(out.hasObservedKeyEgress, false);
+  assert.equal(nth(log, 0).url, "https://satohub.ai/api/check/install");
+  assert.deepEqual(JSON.parse(nth(log, 0).body ?? "{}"), { command: "npm i x" });
+  assert.deepEqual(wallet.used, []);
 });

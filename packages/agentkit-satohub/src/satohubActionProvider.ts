@@ -1,5 +1,6 @@
 import { ActionProvider, CreateAction } from "@coinbase/agentkit";
 import {
+  CHECK_INSTALL_DESCRIPTION,
   CITATION_ASK,
   SatoHttpError,
   SatoHubClient,
@@ -18,7 +19,10 @@ import {
   VERDICT_MEANING,
 } from "./constants.js";
 import { clean, cleanOrNull, stringList, urlOrNull } from "./sanitize.js";
-import { type PreflightArgs, PreflightSchema, type SearchResourcesArgs, SearchResourcesSchema } from "./schemas.js";
+import {
+  type CheckInstallArgs,
+  CheckInstallSchema,
+  type PreflightArgs, PreflightSchema, type SearchResourcesArgs, SearchResourcesSchema } from "./schemas.js";
 
 export type SatohubActionProviderConfig = SatoHubClientOptions & {
   /** Bring your own satohub-core client (a shared one, a test double, a preview origin). */
@@ -147,6 +151,57 @@ export class SatohubActionProvider extends ActionProvider {
         methodology: PREFLIGHT_METHODOLOGY_URL,
         source: preflightUrl(this.client.baseUrl, args.targetType, target, chain),
         citation: CITATION_ASK,
+      },
+      null,
+      2,
+    );
+  }
+
+  /**
+   * Sato Check guard: call before the agent adds a crypto package, MCP server
+   * or skill. Returns the four answers per subject and
+   * `hasObservedKeyEgress` — the one fact an operator may choose to block on.
+   */
+  @CreateAction({
+    name: "check_install",
+    description: CHECK_INSTALL_DESCRIPTION,
+    schema: CheckInstallSchema,
+  })
+  async checkInstall(args: CheckInstallArgs): Promise<string> {
+    let res: Awaited<ReturnType<SatoHubClient["checkInstall"]>>;
+    try {
+      res = await this.client.checkInstall(args.input);
+    } catch (err) {
+      return failure(describeError(err));
+    }
+    const data = asRecord(res.data);
+    if (!data || !Array.isArray(data.subjects)) return failure("Sato Hub answered without a check result");
+    return JSON.stringify(
+      {
+        success: true,
+        hasObservedKeyEgress: data.has_observed_key_egress === true,
+        subjects: (data.subjects as unknown[]).slice(0, 20).map((raw) => {
+          const s = asRecord(raw) ?? {};
+          const subject = asRecord(s.subject) ?? {};
+          const answers = asRecord(s.answers) ?? {};
+          return {
+            id: cleanOrNull(subject.id, 300),
+            name: cleanOrNull(subject.name, 100),
+            version: cleanOrNull(subject.version, 60),
+            answers: {
+              keyAccess: cleanOrNull(answers.key_access),
+              keyEgress: cleanOrNull(answers.key_egress),
+              fundActions: cleanOrNull(answers.fund_actions),
+              changes: cleanOrNull(answers.changes),
+            },
+            checkUrl: urlOrNull(asRecord(s.summary)?.check_url),
+          };
+        }),
+        unresolved: Array.isArray(data.unresolved) ? (data.unresolved as unknown[]).slice(0, 20).map((u) => ({
+          input: cleanOrNull(asRecord(u)?.input, 300),
+          reason: cleanOrNull(asRecord(u)?.reason),
+        })) : [],
+        signature: res.signature,
       },
       null,
       2,
