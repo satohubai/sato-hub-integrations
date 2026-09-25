@@ -78,3 +78,11 @@ export function searchQueryFrom(text: string): string {
     .replace(/[?!]+$/, "")
     .trim();
 }
+
+const INSTALL_RE =
+  /(?:\b(?:npm|pnpm|bun)\s+(?:add|install|i)\s+\S+|\byarn\s+add\s+\S+|\bnpx\s+(?:-y|--yes)\s+\S+|\bpip3?\s+install\s+\S+|\buvx\s+\S+|\bpipx\s+run\s+\S+|\bclaude\s+mcp\s+add\s+[^\n`]+)/;
+
+/** The install command inside a message (`npm i x`, `uvx y`, `claude mcp add …`), or null. */
+export function installCommandFrom(text: string): string | null {
+  return text.match(INSTALL_RE)?.[0]?.trim() ?? null;
+}

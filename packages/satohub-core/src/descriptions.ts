@@ -20,3 +20,6 @@ export const ROUTE_SWAP_DESCRIPTION =
 
 export const BUILD_PLAN_DESCRIPTION =
   "Turn a goal in plain words into an onchain-agent build plan: the goal restated, a stack of REAL Sato Hub listings (each with its Sato Score, liveness, deploy spec and Preflight verdict), matching agent skills with their disclosures, the first action when the goal implies one, and the questions the user still has to answer. Nothing in a plan is invented — a component that is not in the directory cannot appear in one. It holds no keys, signs nothing and deploys nothing.";
+
+export const CHECK_INSTALL_DESCRIPTION =
+  "Sato Check: before adding a crypto package, MCP server or skill, pass the install command (`npm i x`, `uvx y`, `claude mcp add …`) or the MCP JSON config block, and show the user the four answers for each thing it installs — does it take your key, does your key leave, can it move funds on its own, what changed. Each answer names how it was read (declared, traced or observed in a sandbox with planted test keys). A profile describes; it is not a safety rating, and `unknown` means it was not read, not that anything is wrong. Only the text you pass is sent. Read-only.";

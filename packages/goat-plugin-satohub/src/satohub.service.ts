@@ -1,5 +1,6 @@
 import { Tool } from "@goat-sdk/core";
 import {
+    CHECK_INSTALL_DESCRIPTION,
     CITATION_ASK,
     PREFLIGHT_DESCRIPTION,
     SEARCH_RESOURCES_DESCRIPTION,
@@ -8,7 +9,7 @@ import {
     type SatoResponse,
     SatoSignatureError,
 } from "satohub-core";
-import { PreflightParameters, SearchResourcesParameters } from "./parameters.js";
+import { CheckInstallParameters, PreflightParameters, SearchResourcesParameters } from "./parameters.js";
 
 /**
  * Said beside every `unknown` verdict, because it is the reading most often
@@ -48,6 +49,16 @@ export class SatohubService {
         const res = await this.call("satohub_preflight", () => this.client.preflight(input));
         const verdict = (res.data as { verdict?: unknown } | null)?.verdict;
         return envelope(res, verdict === "unknown" ? UNKNOWN_READING : undefined);
+    }
+
+    /** Sato Check guard: call before adding a crypto package, MCP server or skill. */
+    @Tool({
+        name: "satohub_check_install",
+        description: CHECK_INSTALL_DESCRIPTION,
+    })
+    async checkInstall(parameters: CheckInstallParameters) {
+        const { input } = CheckInstallParameters.schema.parse(parameters);
+        return envelope(await this.call("satohub_check_install", () => this.client.checkInstall(input)));
     }
 
     @Tool({

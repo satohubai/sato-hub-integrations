@@ -4,6 +4,8 @@ import { test } from "node:test";
 import { SatoHubClient, type FetchLike } from "satohub-core";
 
 import {
+  checkInstallAction,
+  installCommandFrom,
   parsePreflightTarget,
   preflightAction,
   renderPreflight,
@@ -30,11 +32,11 @@ function jsonFetch(body: unknown, log: string[] = []): FetchLike {
   };
 }
 
-test("the plugin exposes four named actions and claims nothing in its description", () => {
+test("the plugin exposes five named actions and claims nothing in its description", () => {
   assert.equal(satohubPlugin.name, "satohub");
   assert.deepEqual(
     satohubPlugin.actions?.map((a) => a.name),
-    ["SATOHUB_SEARCH_RESOURCES", "SATOHUB_PREFLIGHT", "SATOHUB_ROUTE_SWAP_QUOTE", "SATOHUB_BUILD_PLAN"],
+    ["SATOHUB_SEARCH_RESOURCES", "SATOHUB_PREFLIGHT", "SATOHUB_CHECK_INSTALL", "SATOHUB_ROUTE_SWAP_QUOTE", "SATOHUB_BUILD_PLAN"],
   );
   const prose = [satohubPlugin.description, ...(satohubPlugin.actions ?? []).map((a) => a.description)].join(" ").toLowerCase();
   for (const banned of ["guaranteed", "risk-free", "the best ", "safest", "audited by us", "profitable"]) {
@@ -135,4 +137,32 @@ test("a network failure is reported as a failure, never as an empty success", as
   );
   assert.equal(result.success, false);
   assert.match(result.text, /Could not search the Sato Hub index/);
+});
+
+test("check install: reads the command from the message and renders the four answers", async () => {
+  assert.equal(installCommandFrom("please run npm i viem for me"), "npm i viem");
+  assert.equal(installCommandFrom("what is viem?"), null);
+  const body = {
+    schema: "sato.custody/v1",
+    subjects: [{
+      subject: { kind: "package", id: "npm:viem", name: "viem", version: "2.0.0", digest: null },
+      summary: { check_url: "https://satohub.ai/check/package/npm%3Aviem" },
+      answers: { key_access: "A1", key_egress: "A2", fund_actions: "A3", changes: "A4" },
+    }],
+    unresolved: [],
+    has_observed_key_egress: false,
+  };
+  const original = globalThis.fetch;
+  const log: string[] = [];
+  globalThis.fetch = jsonFetch(body, log) as typeof fetch;
+  try {
+    const msg = message("please run npm i viem");
+    assert.equal(await checkInstallAction.validate(runtime(), msg), true);
+    const res = await checkInstallAction.handler(runtime({ SATOHUB_VERIFY: "off" }), msg);
+    assert.equal(res.success, true);
+    assert.deepEqual(log, ["https://satohub.ai/api/check/install"]);
+    assert.match(res.text, /Does your key leave\? A2/);
+  } finally {
+    globalThis.fetch = original;
+  }
 });

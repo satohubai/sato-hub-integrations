@@ -22,6 +22,7 @@
 import {
   SatoHubClient,
   BUILD_PLAN_DESCRIPTION,
+  CHECK_INSTALL_DESCRIPTION,
   CITATION_ASK,
   PREFLIGHT_DESCRIPTION,
   ROUTE_SWAP_DESCRIPTION,
@@ -32,11 +33,11 @@ import {
 } from "satohub-core";
 
 import type { ElizaAction, ElizaActionResult, ElizaPlugin, ElizaRuntime } from "./eliza-types.js";
-import { messageText, parseChain, parsePreflightTarget, searchQueryFrom } from "./parse.js";
+import { installCommandFrom, messageText, parseChain, parsePreflightTarget, searchQueryFrom } from "./parse.js";
 import { renderBuildPlan, renderPreflight, renderRouteSwap, renderSearch } from "./render.js";
 
 export * from "./eliza-types.js";
-export { parsePreflightTarget, searchQueryFrom } from "./parse.js";
+export { installCommandFrom, parsePreflightTarget, searchQueryFrom } from "./parse.js";
 export { renderBuildPlan, renderPreflight, renderRouteSwap, renderSearch } from "./render.js";
 
 /** Build a client from the runtime's settings. */
@@ -126,6 +127,42 @@ export const preflightAction: ElizaAction = {
   },
 };
 
+// ── 2b. Sato Check before an install ──────────────────────────────────────
+
+/** A guard: the four answers about what an install does with keys and money. Only the command is sent. */
+export const checkInstallAction: ElizaAction = {
+  name: "SATOHUB_CHECK_INSTALL",
+  similes: ["SATO_CHECK", "CHECK_INSTALL", "CHECK_MCP_SERVER", "CHECK_PACKAGE_KEYS"],
+  description: CHECK_INSTALL_DESCRIPTION,
+  validate: async (_runtime, message) => Boolean(installCommandFrom(messageText(message))),
+  handler: async (runtime, message, _state, options, callback) => {
+    const input = (options?.input as string | undefined) ?? installCommandFrom(messageText(message));
+    if (!input) {
+      const text = "I could not find an install command or MCP config in that.";
+      await say(callback, text);
+      return { success: false, text };
+    }
+    try {
+      const { data, signature } = await clientFromRuntime(runtime).checkInstall(input);
+      const lines: string[] = [];
+      for (const s of data.subjects ?? []) {
+        lines.push(`${s.subject.name}${s.subject.version ? `@${s.subject.version}` : ""}`);
+        lines.push(`  Does it take your key? ${s.answers.key_access}`);
+        lines.push(`  Does your key leave? ${s.answers.key_egress}`);
+        lines.push(`  Can it move funds on its own? ${s.answers.fund_actions}`);
+        lines.push(`  What changed? ${s.answers.changes}`);
+        lines.push(`  ${s.summary.check_url}`);
+      }
+      for (const u of data.unresolved ?? []) lines.push(`${u.input}: not profiled (${u.reason})`);
+      const text = lines.join("\n") || "Nothing in that command could be profiled.";
+      await say(callback, text);
+      return { success: true, text, data: withMeta({ input, result: data }, signature) };
+    } catch (e) {
+      return failed(e, "run Sato Check");
+    }
+  },
+};
+
 // ── 3. a swap quote ────────────────────────────────────────────────────────
 
 const SWAP_ARGS_REQUIRED =
@@ -184,6 +221,7 @@ export const buildPlanAction: ElizaAction = {
 export const satohubActions: ElizaAction[] = [
   searchResourcesAction,
   preflightAction,
+  checkInstallAction,
   routeSwapQuoteAction,
   buildPlanAction,
 ];
