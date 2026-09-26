@@ -1,0 +1,22 @@
+{
+  "x402Version": 1,
+  "error": "X-PAYMENT header is required",
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "base",
+      "maxAmountRequired": "50000",
+      "resource": "https://api.example.com/v1-data",
+      "description": "v1 example",
+      "mimeType": "application/json",
+      "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+      "maxTimeoutSeconds": 60,
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "extra": {
+        "name": "USD Coin",
+        "version": "2"
+      }
+    }
+  ],
+  "_fixture": "An x402 v1 402 body in the v1 PaymentRequirements shape (maxAmountRequired, network name)."
+}

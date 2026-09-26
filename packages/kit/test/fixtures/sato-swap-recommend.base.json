@@ -1,0 +1,112 @@
+{
+  "mode": "recommend",
+  "route_id": "rt_xpmjj7kiqz4w",
+  "venue": "kyberswap",
+  "chain": "base",
+  "token_in": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "token_out": "0x4200000000000000000000000000000000000006",
+  "amount_in": "10000000",
+  "amount_out": "3731337400948123",
+  "sato_fee_bps": 15,
+  "sato_fee_recipient": "0xcEE53Eb001d4d1743EF9df333Dcf45bC38622bE9",
+  "disclosure": "Sato Route takes 15 bps (0.15%) on the input leg, charged inside the swap transaction by the aggregator's own router to the Sato fee address 0xcEE53Eb001d4d1743EF9df333Dcf45bC38622bE9. Stable-to-stable pairs are 3 bps; any volatile leg is 15 bps; cross-chain is 25 bps. Sato Hub does not sign this transaction, hold your funds or move them \u2014 you sign it. A failed, reverted or unsigned trade pays nothing. On KyberSwap the fee is the feeAmount/feeReceiver parameter on the route itself (chargeFeeBy=currency_in, in bps), taken by the KyberSwap router on the input token; the quoted amountOut already reflects it.",
+  "chosen_by": [
+    {
+      "signal": "Action",
+      "value": "swap 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 \u2192 0x4200000000000000000000000000000000000006 on base, chosen from 34 candidate venue(s) in the same-chain lane.",
+      "source_field": "resources.resource_type, resources.tags, resources.chains_supported"
+    },
+    {
+      "signal": "Directory record",
+      "value": "Listed on Sato Hub as KyberSwap.",
+      "source_field": "resources.slug"
+    },
+    {
+      "signal": "Public activity",
+      "value": "No activity signal on record \u2014 unknown, not inactive.",
+      "source_field": "resources.last_activity_at"
+    },
+    {
+      "signal": "Observed record",
+      "value": "100% of Sato Hub's own daily checks succeeded over 69 day(s). This is the share of OUR checks that succeeded, never uptime \u2014 a failure can be on our side.",
+      "source_field": "resources.uptime_observed.success_rate_pct"
+    },
+    {
+      "signal": "Verification state",
+      "value": "No reproduced install on record. Listing verification: Unverified.",
+      "source_field": "resources.deploy_spec.deploy_status, resources.verification_status"
+    },
+    {
+      "signal": "Lane",
+      "value": "A same-chain quote: it settles in one transaction on one chain. It was ranked only against other same-chain quotes.",
+      "source_field": "adapter.quote.lane"
+    },
+    {
+      "signal": "Quoted output",
+      "value": "3731337400948123 in the output token's base units, quoted by the venue's own API at checked_at. A quote is not a fill.",
+      "source_field": "adapter.quote.amountOut"
+    }
+  ],
+  "unavailable_venues": [
+    {
+      "venue": "1inch",
+      "reason": "not configured"
+    },
+    {
+      "venue": "odos",
+      "reason": "Odos answered HTTP 530"
+    },
+    {
+      "venue": "lifi",
+      "reason": "not configured: LIFI_INTEGRATOR is unset, and a fee sent under an unregistered integrator collects nothing"
+    },
+    {
+      "venue": "cow",
+      "reason": "not configured: COW_APP_CODE is unset, and a partner fee with no appCode is attributed to nobody"
+    }
+  ],
+  "gate": {
+    "verdict": "no",
+    "refusals": [
+      {
+        "target": "recipient",
+        "rule": "verdict_unknown",
+        "reason": "We hold no record of recipient: The intent carries neither a recipient nor a taker, so there is no address to check. This policy refuses on unknown."
+      }
+    ],
+    "targets": {
+      "token_in": {
+        "verdict": "go",
+        "rule": "TOK0"
+      },
+      "token_out": {
+        "verdict": "go",
+        "rule": "TOK0"
+      },
+      "venue": {
+        "verdict": "caution",
+        "rule": "R6"
+      },
+      "recipient": {
+        "verdict": "unknown",
+        "rule": "RCPT4"
+      }
+    },
+    "policy_id": "default",
+    "policy_version": 1
+  },
+  "simulation": null,
+  "preconditions": [],
+  "tx": null,
+  "withheld": {
+    "reason": "mode \"recommend\" never returns calldata. the gate refused: recipient: We hold no record of recipient: The intent carries neither a recipient nor a taker, so there is no address to check. This policy refuses on unknown.",
+    "rule": "E8"
+  },
+  "checked_at": "2026-09-26T20:58:36.902Z",
+  "caveat": "A route is a recommendation, chosen on the fields named in chosen_by as they read on checked_at. It is not a security review, a quality judgment, or a statement about price, execution or returns \u2014 a quote is a quote, not a fill. Sato Hub does not sign, hold or move funds; the caller signs the transaction it is handed.",
+  "lane": "same-chain",
+  "receipt_url": null,
+  "receipt": null,
+  "non_custodial": "Sato Hub holds no keys, signs nothing and broadcasts nothing. Any transaction here is unsigned: the caller signs it or discards it.",
+  "_fixture": "Recorded from POST https://satohub.ai/api/swap/quote (mode recommend) on 2026-09-26; gate_result, preflight, alternatives and meta trimmed."
+}
