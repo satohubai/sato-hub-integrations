@@ -1,0 +1,47 @@
+{
+  "name": "@satohub/kit",
+  "version": "0.1.0",
+  "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, pluggable signers and a hash-chained receipt log. Preview, unpublished.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./spec": { "types": "./dist/spec/index.d.ts", "default": "./dist/spec/index.js" },
+    "./policy": { "types": "./dist/policy/index.d.ts", "default": "./dist/policy/index.js" },
+    "./signers": { "types": "./dist/signers/index.d.ts", "default": "./dist/signers/index.js" },
+    "./intent": { "types": "./dist/intent/index.d.ts", "default": "./dist/intent/index.js" },
+    "./receipts": { "types": "./dist/receipts/index.d.ts", "default": "./dist/receipts/index.js" },
+    "./actions": { "types": "./dist/actions/index.d.ts", "default": "./dist/actions/index.js" }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satohubai/sato-hub-integrations.git",
+    "directory": "packages/kit"
+  },
+  "homepage": "https://satohub.ai",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
+  },
+  "peerDependencies": {
+    "viem": "^2",
+    "@x402/fetch": "*",
+    "@coinbase/cdp-sdk": "*"
+  },
+  "peerDependenciesMeta": {
+    "@x402/fetch": { "optional": true },
+    "@coinbase/cdp-sdk": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "fast-check": "4.10.2",
+    "typescript": "^5.6.3",
+    "viem": "2.56.9"
+  },
+  "engines": { "node": ">=20" }
+}

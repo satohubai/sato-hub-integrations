@@ -1,0 +1,14 @@
+export * from "./spec/index.js";
+export * from "./version.js";
+export type * from "./types.js";
+export * from "./policy/index.js";
+export * from "./signers/index.js";
+export * from "./intent/index.js";
+export * from "./receipts/index.js";
+export * from "./actions/index.js";
+export { createKit } from "./kit.js";
+export type { KitOptions, SimulateTx } from "./kit.js";
+
+// Named for discoverability (also reachable through the star exports above).
+export { humanApprove, ApprovalRefusedError } from "./signers/index.js";
+export { loadOrCreateIntentSecret, verifyIntentId } from "./intent/index.js";
