@@ -3,6 +3,36 @@
 Two things are gated on an account this repo's build agent does not hold: an
 npm login, and nothing else. Everything short of those is done and checked in.
 
+## Release 0.2.0 + user-agents (prepared 2026-09-25)
+
+`main` carries the 0.2.0 release (Sato Check in core; the install check in the
+three framework packages) and the user-agent fix. Every package now sends
+`<package>/<version>`, and its test pins that string to `package.json`.
+
+| package | version | default user-agent |
+| --- | --- | --- |
+| satohub-core | 0.2.0 | `satohub-core-client/0.2.0` (was `satohub-integrations`) |
+| elizaos-plugin-satohub | 0.2.0 | `elizaos-plugin-satohub/0.2.0` (was `SatoHub-elizaos-plugin`) |
+| agentkit-satohub | 0.2.0 | `agentkit-satohub/0.2.0` (was `…/0.1.0`, stale) |
+| goat-plugin-satohub | 0.2.0 | `goat-plugin-satohub/0.2.0` (was `…/0.1.0`, stale) |
+| satohub-ai-sdk-tools | 0.1.2 | `satohub-ai-sdk-tools/0.1.2` (was `SatoHub-ai-sdk-tools`) |
+| satohub-langchain-tools | 0.1.1 | `satohub-langchain-tools/0.1.1` (was `SatoHub-langchain-tools`) |
+
+Sato Hub's analytics already recognise every one of these names as a package
+(`INTEGRATION_PACKAGE_UAS` in the app, deployed 2026-09-24). An explicit
+`userAgent` option still wins. Publish core first, because all five framework
+packages now depend on `satohub-core@^0.2.0`:
+
+```sh
+npm run build && npm test
+npm publish --access public -w satohub-core
+npm publish --access public -w elizaos-plugin-satohub
+npm publish --access public -w agentkit-satohub
+npm publish --access public -w goat-plugin-satohub
+npm publish --access public -w satohub-ai-sdk-tools
+npm publish --access public -w satohub-langchain-tools
+```
+
 ## 1. npm
 
 All four names were free when this was written (2026-09-13; `registry.npmjs.org`
