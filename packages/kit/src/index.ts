@@ -7,3 +7,4 @@ export * from "./intent/index.js";
 export * from "./receipts/index.js";
 export * from "./actions/index.js";
 export { createKit } from "./kit.js";
+export type { KitOptions, SimulateTx } from "./kit.js";

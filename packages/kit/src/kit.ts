@@ -36,7 +36,8 @@ import type {
   ReceiptLog,
 } from "./types.js";
 import { evaluatePreflight } from "./policy/preflight.js";
-import * as txSimulate from "./actions/tx_simulate.js";
+import { simulateTx } from "./actions/tx_simulate.js";
+import { ActionRefusedError } from "./actions/_util.js";
 import { computeIntentId, newNonce, paramsDigest, randomIntentSecret, verifyIntentId } from "./intent/hmac.js";
 import { memoryIntentStore } from "./intent/store.js";
 import { memoryReceiptLog } from "./receipts/log.js";
@@ -69,11 +70,8 @@ function isPrepareAction(a: AnyAction): a is PrepareAction {
   return typeof (a as PrepareAction).build === "function";
 }
 
-/** The simulate function from actions/tx_simulate.ts, if that builder has landed. */
-function defaultSimulate(): SimulateTx | undefined {
-  const f = (txSimulate as Record<string, unknown>).simulateTx;
-  return typeof f === "function" ? (f as SimulateTx) : undefined;
-}
+/** The rules that only make sense for an EVM transaction (an x402 payment has nothing to simulate). */
+const EVM_ONLY_RULES: ReadonlySet<Refusal["rule"]> = new Set(["simulation_required", "simulation_failed"]);
 
 function refusal(rule: Refusal["rule"], limit: string, observed: string, message: string): Refusal {
   return { rule, limit, observed, message };
@@ -151,13 +149,22 @@ export function createKit(opts: KitOptions): Kit {
     async prepare(id: string, input: unknown): Promise<PreparedIntent> {
       const a = lookup(id);
       if (!isPrepareAction(a)) throw new Error(`action "${id}" has no prepare step; use read`);
-      const built = await a.build(input, ctx);
+      let built;
+      try {
+        built = await a.build(input, ctx);
+      } catch (e) {
+        // A build that found nothing it may build names its rules; keep them on the error.
+        if (e instanceof ActionRefusedError) {
+          throw Object.assign(new Error(`action "${id}" refused before an intent was built: ${refusalList(e.refusals)}`), { refusals: e.refusals });
+        }
+        throw e;
+      }
 
       // Simulate FIRST, then the pre-flight sees the result.
       let simulation: SimulationResult | null = null;
       let simError: string | null = null;
       if (built.unsigned.kind === "evm_tx") {
-        const simulate = opts.simulate ?? defaultSimulate();
+        const simulate: SimulateTx | undefined = opts.simulate ?? simulateTx;
         if (simulate) {
           try {
             simulation = await simulate(built.unsigned, ctx);
@@ -171,7 +178,11 @@ export function createKit(opts: KitOptions): Kit {
 
       const ttl_s = policy.intent_ttl_s;
       const verdict = evaluate(policy, { ...built.facts, simulation, ttl_s });
-      const refusals = [...verdict.refusals];
+      // simulation_required applies to EVM transactions; an x402 payment is a signed
+      // authorization with no transaction to simulate, so those rules do not apply.
+      const refusals = built.unsigned.kind === "evm_tx"
+        ? [...verdict.refusals]
+        : verdict.refusals.filter((x) => !EVM_ONLY_RULES.has(x.rule));
       // require_simulation is constant: an EVM tx never leaves prepare unsimulated,
       // whatever the evaluator returned.
       if (built.unsigned.kind === "evm_tx") {
@@ -181,7 +192,7 @@ export function createKit(opts: KitOptions): Kit {
           refusals.push(refusal("simulation_failed", "ok", simulation.error ?? "unknown", `Simulation failed: ${simulation.error ?? "unknown"}.`));
         }
       }
-      const ok = verdict.ok && refusals.length === 0;
+      const ok = refusals.length === 0;
 
       // Bind the params AND the payload execute will hand the signer.
       const bound = { params: built.params, unsigned: built.unsigned };

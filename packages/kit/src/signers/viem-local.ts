@@ -27,7 +27,17 @@ export type ViemLocalSignerOptions = (
 ) & {
   /** Not recommended. Lets this in-process key sign on mainnet chain ids. */
   allowMainnet?: boolean;
+  /**
+   * The RPC is a local fork (anvil/hardhat) running with chain id 31337. A tx
+   * built for the forked chain (e.g. base, 8453) is then signed with chain id
+   * 31337, so the signature is only valid on the fork and cannot be replayed on
+   * the real chain. Any other RPC chain id still has to match the tx exactly.
+   */
+  fork?: boolean;
 };
+
+/** The chain id a local fork must report when `fork: true`. */
+export const FORK_CHAIN_ID = 31337;
 
 export function viemLocalSigner(opts: ViemLocalSignerOptions): Signer {
   if (!opts || typeof opts.rpc !== "function") throw new Error("viemLocalSigner: `rpc` is required");
@@ -61,17 +71,18 @@ export function viemLocalSigner(opts: ViemLocalSignerOptions): Signer {
     },
     async sendTransaction(tx: UnsignedEvmTx) {
       assertUnsignedEvmTx(tx);
-      guardChain(tx.chain_id);
       assertFromMatches(tx, account.address);
       const client = rpc(tx.chain as OdaChain);
       if (!client) throw new Error(`viemLocalSigner: no RPC for chain ${tx.chain}`);
       const rpcChainId = Number(await client.request({ method: "eth_chainId" }));
-      if (rpcChainId !== tx.chain_id) {
+      const onFork = opts.fork === true && rpcChainId === FORK_CHAIN_ID;
+      if (!onFork) guardChain(tx.chain_id);
+      if (rpcChainId !== tx.chain_id && !onFork) {
         throw new Error(`viemLocalSigner: RPC chain id ${rpcChainId} does not match tx chain_id ${tx.chain_id}`);
       }
       guardChain(rpcChainId);
       const chain = defineChain({
-        id: tx.chain_id,
+        id: rpcChainId,
         name: tx.chain,
         nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
         rpcUrls: { default: { http: [] } },
