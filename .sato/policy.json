@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "fail_on": ["key_egress_observed", "undeclared_key_read"]
+}

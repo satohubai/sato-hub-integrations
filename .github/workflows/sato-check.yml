@@ -1,0 +1,39 @@
+name: sato-check
+
+# Sato Check on our own dependency changes — the same Action we publish
+# (satohubai/preflight-action), run on every PR that adds or bumps a package,
+# an MCP server or a skill. It comments the four custody answers per changed
+# dependency and fails only on this repo's own policy (.sato/policy.json):
+# a planted test key observed leaving, or a key read the project never declares.
+# Only runs when a dependency manifest changes.
+on:
+  pull_request:
+    paths:
+      - "**/package.json"
+      - "**/.mcp.json"
+      - "**/SKILL.md"
+      - ".sato/policy.json"
+
+concurrency:
+  group: sato-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sato-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: satohubai/preflight-action@v1
+        env:
+          # Our own CI identifies as ours, so it is never counted as outside use.
+          SATO_CHECK_UA: SatoHub-ci/1.0
+        with:
+          custody: "true"
+          fail_on: none
