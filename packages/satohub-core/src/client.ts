@@ -28,7 +28,7 @@ import { verifyBodySignature, verifyResponseSignature, type Jwks, type VerifyRes
  * through it is counted as a caller, never as Sato Hub's own traffic (which is
  * why it is no longer `SatoHub-…`). Pass `userAgent` to name your agent instead.
  */
-export const DEFAULT_USER_AGENT = "satohub-core-client/0.2.0";
+export const DEFAULT_USER_AGENT = "satohub-core-client/0.2.1";
 
 export const DEFAULT_BASE_URL = "https://satohub.ai";
 

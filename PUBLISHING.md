@@ -3,25 +3,29 @@
 Two things are gated on an account this repo's build agent does not hold: an
 npm login, and nothing else. Everything short of those is done and checked in.
 
-## Release 0.2.0 + user-agents (prepared 2026-09-25)
+## 0.2.1 — the user-agent patch (prepared 2026-09-26)
 
-`main` carries the 0.2.0 release (Sato Check in core; the install check in the
-three framework packages) and the user-agent fix. Every package now sends
-`<package>/<version>`, and its test pins that string to `package.json`.
+0.2.0 of `satohub-core`, `elizaos-plugin-satohub`, `agentkit-satohub` and
+`goat-plugin-satohub` was published on 2026-09-26 from `2435df6`, the release
+commit before the user-agent fix merged. Those tarballs still send
+`satohub-integrations`, `SatoHub-elizaos-plugin`, `agentkit-satohub/0.1.0` and
+`goat-plugin-satohub/0.1.0`. Sato Hub counts all four as packages, so nothing
+is miscounted, but the versions in the header are wrong. 0.2.1 is that fix
+alone. `satohub-ai-sdk-tools` 0.1.2 and `satohub-langchain-tools` 0.1.1 were
+never published with the old strings, so they ship as they are.
 
 | package | version | default user-agent |
 | --- | --- | --- |
-| satohub-core | 0.2.0 | `satohub-core-client/0.2.0` (was `satohub-integrations`) |
-| elizaos-plugin-satohub | 0.2.0 | `elizaos-plugin-satohub/0.2.0` (was `SatoHub-elizaos-plugin`) |
-| agentkit-satohub | 0.2.0 | `agentkit-satohub/0.2.0` (was `…/0.1.0`, stale) |
-| goat-plugin-satohub | 0.2.0 | `goat-plugin-satohub/0.2.0` (was `…/0.1.0`, stale) |
-| satohub-ai-sdk-tools | 0.1.2 | `satohub-ai-sdk-tools/0.1.2` (was `SatoHub-ai-sdk-tools`) |
-| satohub-langchain-tools | 0.1.1 | `satohub-langchain-tools/0.1.1` (was `SatoHub-langchain-tools`) |
+| satohub-core | 0.2.1 | `satohub-core-client/0.2.1` |
+| elizaos-plugin-satohub | 0.2.1 | `elizaos-plugin-satohub/0.2.1` |
+| agentkit-satohub | 0.2.1 | `agentkit-satohub/0.2.1` |
+| goat-plugin-satohub | 0.2.1 | `goat-plugin-satohub/0.2.1` |
+| satohub-ai-sdk-tools | 0.1.2 | `satohub-ai-sdk-tools/0.1.2` |
+| satohub-langchain-tools | 0.1.1 | `satohub-langchain-tools/0.1.1` |
 
-Sato Hub's analytics already recognise every one of these names as a package
-(`INTEGRATION_PACKAGE_UAS` in the app, deployed 2026-09-24). An explicit
-`userAgent` option still wins. Publish core first, because all five framework
-packages now depend on `satohub-core@^0.2.0`:
+Each package's test pins its user-agent to its `package.json` version. An
+explicit `userAgent` option still wins. Every framework package depends on
+`satohub-core@^0.2.0`, which 0.2.1 satisfies; publish core first anyway:
 
 ```sh
 npm run build && npm test
