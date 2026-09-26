@@ -110,7 +110,7 @@ export function compileCdpPolicy(
     const [c, t] = split(k);
     if (!inScope(c)) continue;
     if (nativeSymbols(c).includes(t.toUpperCase())) {
-      const v = BigInt(policy.max_per_trade[k]);
+      const v = BigInt(policy.max_per_trade[k]!); // k comes from Object.keys
       ethCap = ethCap === null || v < ethCap ? v : ethCap;
     } else nonNative.push(k);
   }

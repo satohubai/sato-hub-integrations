@@ -2,9 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
-    /* off: vendored src/spec (verbatim lib/oda) targets the app tsconfig, which does not set it */
-    "noUncheckedIndexedAccess": false
+    "outDir": "dist"
   },
   "include": ["src"]
 }

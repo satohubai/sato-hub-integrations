@@ -19,4 +19,13 @@ It never holds funds and ships no keys.
 
 Contracts (`sato.action/v1`, `sato.policy/v1`, `sato.receipt/v1`) live in `src/spec` (see `VENDORED.md`).
 
+## Recommended .gitignore
+
+The file intent store and the intent HMAC secret live under `.sato/` by default
+(`intents/`, `intent.key`, mode 0600). Keep them out of version control:
+
+```gitignore
+.sato/
+```
+
 License: MIT

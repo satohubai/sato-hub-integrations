@@ -39,7 +39,7 @@ test("USD caps, unknown price and unknown spend", () => {
   assert.deepEqual(rules(evaluatePreflight(policy({ max_usd_per_day: 50 }), facts({ usd_spent_today: 45 }))), ["max_usd_per_day"]);
   assert.equal(evaluatePreflight(policy({ max_usd_per_trade: 5, unknown_verdict: "allow" }), facts({ usd_value: null })).ok, true);
   const u = evaluatePreflight(policy({ max_usd_per_trade: 5 }), facts({ usd_value: null })).refusals[0];
-  assert.equal(u.observed, "unknown");
+  assert.equal(u!.observed, "unknown");
 });
 
 test("max_per_trade compares base units as BigInt", () => {
@@ -56,7 +56,7 @@ test("slippage, ttl, simulation", () => {
   assert.deepEqual(rules(evaluatePreflight(policy(), facts({ simulation: null }))), ["simulation_required"]);
   const f = evaluatePreflight(policy(), facts({ simulation: { ...SIM, ok: false, error: "execution reverted" } }));
   assert.deepEqual(rules(f), ["simulation_failed"]);
-  assert.equal(f.refusals[0].observed, "execution reverted");
+  assert.equal(f.refusals[0]!.observed, "execution reverted");
 });
 
 // ── properties ───────────────────────────────────────────────────────────────

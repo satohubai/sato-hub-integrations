@@ -71,19 +71,22 @@ const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
 
 /** base64url without padding — pure, so this folder needs no Buffer. */
 export function base64url(bytes: Uint8Array): string {
+  // `b` and `c` read with a fallback so the file compiles under noUncheckedIndexedAccess (the kit enables it).
+  const b = (k: number): number => bytes[k] ?? 0;
+  const c = (k: number): string => B64URL.charAt(k);
   let out = "";
   let i = 0;
   for (; i + 2 < bytes.length; i += 3) {
-    const n = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63] + B64URL[(n >> 6) & 63] + B64URL[n & 63];
+    const n = (b(i) << 16) | (b(i + 1) << 8) | b(i + 2);
+    out += c((n >> 18) & 63) + c((n >> 12) & 63) + c((n >> 6) & 63) + c(n & 63);
   }
   const rest = bytes.length - i;
   if (rest === 1) {
-    const n = bytes[i] << 16;
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63];
+    const n = b(i) << 16;
+    out += c((n >> 18) & 63) + c((n >> 12) & 63);
   } else if (rest === 2) {
-    const n = (bytes[i] << 16) | (bytes[i + 1] << 8);
-    out += B64URL[(n >> 18) & 63] + B64URL[(n >> 12) & 63] + B64URL[(n >> 6) & 63];
+    const n = (b(i) << 16) | (b(i + 1) << 8);
+    out += c((n >> 18) & 63) + c((n >> 12) & 63) + c((n >> 6) & 63);
   }
   return out;
 }
@@ -127,7 +130,8 @@ export type SimulationResult = {
 /**
  * The fee the user pays for this intent, stated per venue. `statement` is the
  * venue's disclosure quoted verbatim. `direct_quote_available` records whether
- * a fee-free direct quote was returned alongside (scope §0.3).
+ * a quote with no Sato fee was returned alongside (scope §0.3). It is never
+ * called "fee-free": the other venue may charge its own fee.
  */
 export type FeeDisclosure = {
   venue: string;
@@ -228,6 +232,7 @@ export function firstBrokenLink(lines: readonly Receipt[], sha256Hex: (s: string
   let prev: string = RECEIPT_GENESIS_PREV_HASH;
   for (let i = 0; i < lines.length; i++) {
     const r = lines[i];
+    if (!r) return i;
     if (r.seq !== i || r.prev_hash !== prev) return i;
     if (r.hash !== `sha256:${sha256Hex(receiptHashInput(r))}`) return i;
     prev = r.hash;

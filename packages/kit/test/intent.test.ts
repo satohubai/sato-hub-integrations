@@ -56,7 +56,7 @@ test("file store writes 0600 files and refuses non-id names", async () => {
   await s.put(r);
   const files = await readdir(dir);
   assert.deepEqual(files, [`${r.intent.intent_id}.json`]);
-  assert.equal((await stat(join(dir, files[0]))).mode & 0o777, 0o600);
+  assert.equal((await stat(join(dir, files[0]!))).mode & 0o777, 0o600);
   await assert.rejects(s.get("../etc/passwd"), /not an intent id/);
 });
 
