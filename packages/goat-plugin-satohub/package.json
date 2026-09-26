@@ -1,6 +1,6 @@
 {
   "name": "goat-plugin-satohub",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "GOAT SDK plugin for Sato Hub: run a Preflight check on a repo, package, MCP endpoint or token before your agent installs, connects to or trades it, and search the scored onchain-agent index. Keyless, read-only, never signs or moves funds.",
   "license": "MIT",
   "type": "module",
@@ -41,7 +41,7 @@
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "dependencies": {
-    "satohub-core": "^0.1.0"
+    "satohub-core": "^0.2.0"
   },
   "peerDependencies": {
     "@goat-sdk/core": "^0.5.0",

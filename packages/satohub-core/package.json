@@ -1,6 +1,6 @@
 {
   "name": "satohub-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Thin, zero-dependency client for the public Sato Hub surfaces — the scored onchain-agent index, Preflight, Sato Route and the Sato Bot build plan — with the Ed25519 response-signature verifier included.",
   "license": "MIT",
   "type": "module",

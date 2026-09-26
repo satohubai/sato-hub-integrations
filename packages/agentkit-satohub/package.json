@@ -1,6 +1,6 @@
 {
   "name": "agentkit-satohub",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Coinbase AgentKit action provider for Sato Hub: run a Preflight check on a repo, package, MCP endpoint, ERC-8004 agent or token before your agent installs, connects to, pays or trades it, and search the scored onchain-agent index. Keyless, read-only, never uses the wallet.",
   "license": "MIT",
   "type": "module",
@@ -46,7 +46,7 @@
     "test:live": "tsc -p tsconfig.test.json && SATOHUB_LIVE=1 node --test .test-build/test/live.test.js"
   },
   "dependencies": {
-    "satohub-core": "^0.1.0"
+    "satohub-core": "^0.2.0"
   },
   "peerDependencies": {
     "@coinbase/agentkit": "^0.10.0",
