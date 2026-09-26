@@ -3,7 +3,7 @@
  * Sato Hub's logs treat that prefix as its own traffic, and an AgentKit agent
  * calling this provider is not. Pass `userAgent` to name your agent instead.
  */
-export const DEFAULT_USER_AGENT = "agentkit-satohub/0.1.0";
+export const DEFAULT_USER_AGENT = "agentkit-satohub/0.2.0";
 
 /** Where the Preflight rules are written down. */
 export const PREFLIGHT_METHODOLOGY_URL = "https://satohub.ai/preflight/methodology";
