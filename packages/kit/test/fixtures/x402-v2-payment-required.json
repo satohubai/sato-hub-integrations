@@ -1,0 +1,27 @@
+{
+  "_fixture": "The PaymentRequired example from github.com/coinbase/x402 specs/transports-v2/http.md; header is base64(JSON.stringify(decoded)).",
+  "decoded": {
+    "x402Version": 2,
+    "error": "PAYMENT-SIGNATURE header is required",
+    "resource": {
+      "url": "https://api.example.com/premium-data",
+      "description": "Access to premium market data",
+      "mimeType": "application/json"
+    },
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:84532",
+        "amount": "10000",
+        "asset": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+        "maxTimeoutSeconds": 60,
+        "extra": {
+          "name": "USDC",
+          "version": "2"
+        }
+      }
+    ]
+  },
+  "header": "eyJ4NDAyVmVyc2lvbiI6IDIsICJlcnJvciI6ICJQQVlNRU5ULVNJR05BVFVSRSBoZWFkZXIgaXMgcmVxdWlyZWQiLCAicmVzb3VyY2UiOiB7InVybCI6ICJodHRwczovL2FwaS5leGFtcGxlLmNvbS9wcmVtaXVtLWRhdGEiLCAiZGVzY3JpcHRpb24iOiAiQWNjZXNzIHRvIHByZW1pdW0gbWFya2V0IGRhdGEiLCAibWltZVR5cGUiOiAiYXBwbGljYXRpb24vanNvbiJ9LCAiYWNjZXB0cyI6IFt7InNjaGVtZSI6ICJleGFjdCIsICJuZXR3b3JrIjogImVpcDE1NTo4NDUzMiIsICJhbW91bnQiOiAiMTAwMDAiLCAiYXNzZXQiOiAiMHgwMzZDYkQ1Mzg0MmM1NDI2NjM0ZTc5Mjk1NDFlQzIzMThmM2RDRjdlIiwgInBheVRvIjogIjB4MjA5NjkzQmM2YWZjMEM1MzI4YkEzNkZhRjAzQzUxNEVGMzEyMjg3QyIsICJtYXhUaW1lb3V0U2Vjb25kcyI6IDYwLCAiZXh0cmEiOiB7Im5hbWUiOiAiVVNEQyIsICJ2ZXJzaW9uIjogIjIifX1dfQ=="
+}
