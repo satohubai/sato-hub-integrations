@@ -1,1 +1,1 @@
-export { memoryReceiptLog, fileReceiptLog } from "./log.js";
+export { memoryReceiptLog, fileReceiptLog, sealReceipt, verifyReceipts } from "./log.js";
