@@ -12,7 +12,7 @@ export type SatohubPluginOptions = SatoHubClientOptions & {
  * Sato Hub's logs treat that prefix as its own traffic, and a GOAT agent
  * calling this plugin is not. Pass `userAgent` to name your agent instead.
  */
-export const DEFAULT_USER_AGENT = "goat-plugin-satohub/0.1.0";
+export const DEFAULT_USER_AGENT = "goat-plugin-satohub/0.2.0";
 
 export class SatohubPlugin extends PluginBase {
     constructor(options: SatohubPluginOptions = {}) {

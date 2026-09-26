@@ -7,9 +7,11 @@
 
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+  DEFAULT_USER_AGENT,
   SatoHubClient,
   SatoSignatureError,
   SatoHttpError,
@@ -223,4 +225,24 @@ test("empty and undefined parameters are dropped rather than sent as ''", async 
   assert.ok(log[0]?.includes("goal=a+Base+trading+agent"));
   assert.ok(!log[0]?.includes("chain="));
   assert.ok(!log[0]?.includes("constraints="));
+});
+
+// ── the user-agent ─────────────────────────────────────────────────────────
+
+test("the default user-agent names the client and this version, and an explicit one still wins", async () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { version: string };
+  assert.equal(DEFAULT_USER_AGENT, `satohub-core-client/${pkg.version}`, "bump DEFAULT_USER_AGENT with package.json");
+  assert.doesNotMatch(DEFAULT_USER_AGENT, /^SatoHub-/);
+
+  const seen: string[] = [];
+  const routes = mockFetch({ "/api/preflight": signedRoute({ verdict: "go" }), "/.well-known/jwks.json": jwksRoute });
+  const doFetch: FetchLike = async (url, init) => {
+    seen.push(new Headers(init?.headers).get("user-agent") ?? "");
+    return routes(url, init);
+  };
+  await new SatoHubClient({ fetch: doFetch }).preflight({ repo: "a/b" });
+  assert.ok(seen.length > 0 && seen.every((ua) => ua === (DEFAULT_USER_AGENT as string)), seen.join(" | "));
+  seen.length = 0;
+  await new SatoHubClient({ fetch: doFetch, userAgent: "my-agent/1.0" }).preflight({ repo: "a/b" });
+  assert.ok(seen.includes("my-agent/1.0"));
 });

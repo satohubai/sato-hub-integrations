@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { type Balance, type Chain, type Signature, type ToolBase, WalletClientBase, getTools } from "@goat-sdk/core";
@@ -307,4 +308,10 @@ test("check_install: one POST to /api/check/install with only the command; walle
     assert.deepEqual(JSON.parse(nth(log, 0).body ?? "{}"), { command: "uvx mcp-server-x" });
     assert.equal(out.has_observed_key_egress, false);
     assert.deepEqual(wallet.used, []);
+});
+
+test("the default user-agent is this package's name and version, never `SatoHub-…`", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { version: string };
+  assert.equal(DEFAULT_USER_AGENT, `goat-plugin-satohub/${pkg.version}`, "bump DEFAULT_USER_AGENT with package.json");
+  assert.doesNotMatch(DEFAULT_USER_AGENT, /^SatoHub-/);
 });

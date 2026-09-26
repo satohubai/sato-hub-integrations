@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { SatoHubClient, type FetchLike } from "satohub-core";
 
 import {
+  DEFAULT_USER_AGENT,
   checkInstallAction,
   installCommandFrom,
   parsePreflightTarget,
@@ -165,4 +167,13 @@ test("check install: reads the command from the message and renders the four ans
   } finally {
     globalThis.fetch = original;
   }
+});
+
+// ── the user-agent ─────────────────────────────────────────────────────────
+
+test("the default user-agent is this package's name and version, never `SatoHub-…`", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { name: string; version: string };
+  assert.equal(DEFAULT_USER_AGENT, `elizaos-plugin-satohub/${pkg.version}`, "bump DEFAULT_USER_AGENT with package.json");
+  // Sato Hub counts `SatoHub-<name>` user-agents as its own scripts.
+  assert.doesNotMatch(DEFAULT_USER_AGENT, /^SatoHub-/);
 });
