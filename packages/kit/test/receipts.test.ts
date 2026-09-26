@@ -32,7 +32,7 @@ test("file log: a tampered line is detected at its index", async () => {
   for (let i = 1; i <= 4; i++) await log.append(draft(i));
   assert.deepEqual(await log.verify(), { ok: true, broken_at: null });
   const lines = (await readFile(path, "utf8")).trim().split("\n");
-  const l2 = JSON.parse(lines[2]);
+  const l2 = JSON.parse(lines[2]!);
   l2.tx_hash = "0x" + "f".repeat(64);
   lines[2] = JSON.stringify(l2);
   await writeFile(path, lines.join("\n") + "\n");

@@ -40,7 +40,7 @@ test("prepare -> execute sends the stored tx once; second execute is rejected", 
   assert.equal(r.mandate.approval, "policy");
   await assert.rejects(kit.execute({ intent_id: p.intent_id }), /already executed/);
   assert.equal(sent.length, 1);
-  assert.equal(sent[0].value, "5");
+  assert.equal(sent[0]!.value, "5");
   assert.deepEqual((await receipts.read()).map((x) => x.status), ["prepared", "executed"]);
   assert.deepEqual(await receipts.verify(), { ok: true, broken_at: null });
 });

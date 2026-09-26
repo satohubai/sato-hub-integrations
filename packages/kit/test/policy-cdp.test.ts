@@ -57,7 +57,7 @@ test("every constraining field is either compiled or listed", () => {
 test("network option scopes the document; an unmapped-only chain set rejects instead of widening", () => {
   const p = pol({ allow_chains: ["base", "base-sepolia"] });
   const r = compileCdpPolicy(p, { address: ME, network: "base" });
-  assert.deepEqual(r.document.rules[1].criteria, [{ type: "evmNetwork", networks: ["base"], operator: "in" }]);
+  assert.deepEqual(r.document.rules[1]!.criteria, [{ type: "evmNetwork", networks: ["base"], operator: "in" }]);
   const s = compileCdpPolicy(pol({ allow_chains: ["solana"] }), { address: ME });
   assert.ok(s.document.rules.every((x) => x.action === "reject"));
 });

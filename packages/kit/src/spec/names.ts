@@ -52,7 +52,7 @@ export function toolNameToOdaId(name: string, knownIds?: readonly string[]): str
   if (typeof name !== "string" || !TOOL_NAME_RE.test(name) || name.length > TOOL_NAME_MAX) return null;
   if (knownIds) {
     const hits = knownIds.filter((id) => isOdaId(id) && id.split(".").join("_") === name);
-    return hits.length === 1 ? hits[0] : null;
+    return hits.length === 1 ? (hits[0] ?? null) : null;
   }
   const parts = name.split("_");
   if (parts.length !== 2) return null;
