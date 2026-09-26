@@ -1,7 +1,10 @@
-export { chainReadDescriptor, chainReadAction } from "./chain_read.js";
-export { swapQuoteDescriptor, swapQuoteAction } from "./swap_quote.js";
-export { swapPrepareDescriptor, swapPrepareAction } from "./swap_prepare.js";
-export { x402PrepareDescriptor, x402PrepareAction } from "./x402_prepare.js";
-export { erc8004LookupDescriptor, erc8004LookupAction } from "./erc8004_lookup.js";
-export { txSimulateDescriptor, txSimulateAction } from "./tx_simulate.js";
+export { chainReadDescriptor, chainReadAction, chainRead, readOnlyFragment, CHAIN_READ_KINDS } from "./chain_read.js";
+export { swapQuoteDescriptor, swapQuoteAction, swapQuote } from "./swap_quote.js";
+export { swapPrepareDescriptor, swapPrepareAction, buildSwapPrepare } from "./swap_prepare.js";
+export { x402PrepareDescriptor, x402PrepareAction, buildX402Prepare, parseX402Requirements } from "./x402_prepare.js";
+export { erc8004LookupDescriptor, erc8004LookupAction, erc8004Lookup, ERC8004_IDENTITY_REGISTRY } from "./erc8004_lookup.js";
+export { txSimulateDescriptor, txSimulateAction, simulateTx } from "./tx_simulate.js";
 export { CORE_ACTIONS, coreActions } from "./registry.js";
+export { ActionInputError, ActionRefusedError } from "./_util.js";
+export { SATO_SWAP_URL, LIFI_QUOTE_URL, SWAP_VENUES, NO_SATO_FEE_STATEMENT } from "./_venues.js";
+export type { SwapQuote, SwapVenue } from "./_venues.js";
