@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { beforeEach, test } from "node:test";
 
 import { type Action, AgentKit, type Network, WalletProvider } from "@coinbase/agentkit";
@@ -497,4 +498,10 @@ test("check_install posts the command and returns the four answers", async () =>
   assert.equal(nth(log, 0).url, "https://satohub.ai/api/check/install");
   assert.deepEqual(JSON.parse(nth(log, 0).body ?? "{}"), { command: "npm i x" });
   assert.deepEqual(wallet.used, []);
+});
+
+test("the default user-agent is this package's name and version, never `SatoHub-…`", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { version: string };
+  assert.equal(DEFAULT_USER_AGENT, `agentkit-satohub/${pkg.version}`, "bump DEFAULT_USER_AGENT with package.json");
+  assert.doesNotMatch(DEFAULT_USER_AGENT, /^SatoHub-/);
 });

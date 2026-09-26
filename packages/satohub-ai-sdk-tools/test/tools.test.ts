@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { SatoHubClient, type FetchLike } from "satohub-core";
 
-import { satohubTools } from "../src/index.js";
+import { DEFAULT_USER_AGENT, satohubTools } from "../src/index.js";
 
 function mockFetch(body: unknown, log: string[] = []): FetchLike {
   return async (url, init) => {
@@ -77,4 +78,13 @@ test("a swap of a token for itself is refused before any request is made", async
     /must differ/,
   );
   assert.equal(log.length, 0);
+});
+
+// ── the user-agent ─────────────────────────────────────────────────────────
+
+test("the default user-agent is this package's name and version, never `SatoHub-…`", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { name: string; version: string };
+  assert.equal(DEFAULT_USER_AGENT, `satohub-ai-sdk-tools/${pkg.version}`, "bump DEFAULT_USER_AGENT with package.json");
+  // Sato Hub counts `SatoHub-<name>` user-agents as its own scripts.
+  assert.doesNotMatch(DEFAULT_USER_AGENT, /^SatoHub-/);
 });

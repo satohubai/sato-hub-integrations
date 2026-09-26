@@ -1,6 +1,6 @@
 {
   "name": "satohub-langchain-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LangChain.js tools for Sato Hub: search the scored onchain-agent index, run a Preflight check before installing or trading, get a swap-venue recommendation with the fee disclosed, and turn a goal into a build plan of real listings. Read-only and non-custodial.",
   "license": "MIT",
   "type": "module",
@@ -38,7 +38,7 @@
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "dependencies": {
-    "satohub-core": "^0.1.0"
+    "satohub-core": "^0.2.0"
   },
   "peerDependencies": {
     "@langchain/core": ">=0.3.0",

@@ -22,6 +22,14 @@
 import type { CheckResponse, CustodySubjectKind, InstallCheckResponse } from "./custody.js";
 import { verifyBodySignature, verifyResponseSignature, type Jwks, type VerifyResult } from "./verify.js";
 
+/**
+ * The default User-Agent: the client's name and this package's version. Sato Hub's analytics
+ * recognise this exact name as the published package, so an agent calling
+ * through it is counted as a caller, never as Sato Hub's own traffic (which is
+ * why it is no longer `SatoHub-…`). Pass `userAgent` to name your agent instead.
+ */
+export const DEFAULT_USER_AGENT = "satohub-core-client/0.2.0";
+
 export const DEFAULT_BASE_URL = "https://satohub.ai";
 
 /** Minimal fetch shape, so a caller can inject one (and a test can mock it). */
@@ -143,7 +151,7 @@ export class SatoHubClient {
     this.doFetch = f;
     this.timeoutMs = opts.timeoutMs ?? 20_000;
     this.verifyMode = opts.verify ?? "throw";
-    this.userAgent = opts.userAgent ?? "satohub-integrations";
+    this.userAgent = opts.userAgent ?? DEFAULT_USER_AGENT;
   }
 
   // ── the four calls ───────────────────────────────────────────────────────

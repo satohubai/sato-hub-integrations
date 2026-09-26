@@ -36,6 +36,14 @@ import type { ElizaAction, ElizaActionResult, ElizaPlugin, ElizaRuntime } from "
 import { installCommandFrom, messageText, parseChain, parsePreflightTarget, searchQueryFrom } from "./parse.js";
 import { renderBuildPlan, renderPreflight, renderRouteSwap, renderSearch } from "./render.js";
 
+/**
+ * The default User-Agent: this package's name and version. Sato Hub's analytics
+ * recognise this exact name as the published package, so an elizaOS agent calling
+ * through it is counted as a caller, never as Sato Hub's own traffic (which is
+ * why it is no longer `SatoHub-…`). Pass `userAgent` to name your agent instead.
+ */
+export const DEFAULT_USER_AGENT = "elizaos-plugin-satohub/0.2.0";
+
 export * from "./eliza-types.js";
 export { installCommandFrom, parsePreflightTarget, searchQueryFrom } from "./parse.js";
 export { renderBuildPlan, renderPreflight, renderRouteSwap, renderSearch } from "./render.js";
@@ -49,7 +57,7 @@ export function clientFromRuntime(runtime: ElizaRuntime, overrides: SatoHubClien
     baseUrl: get("SATOHUB_BASE_URL") || undefined,
     timeoutMs: Number.isFinite(timeout) && timeout > 0 ? timeout : undefined,
     verify: verifyRaw === "off" ? false : verifyRaw === "report" ? "report" : "throw",
-    userAgent: "SatoHub-elizaos-plugin",
+    userAgent: DEFAULT_USER_AGENT,
     ...overrides,
   });
 }

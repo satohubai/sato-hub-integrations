@@ -43,6 +43,14 @@ import {
   type SearchResourcesArgs,
 } from "satohub-core/schemas";
 
+/**
+ * The default User-Agent: this package's name and version. Sato Hub's analytics
+ * recognise this exact name as the published package, so a LangChain agent calling
+ * through it is counted as a caller, never as Sato Hub's own traffic (which is
+ * why it is no longer `SatoHub-…`). Pass `userAgent` to name your agent instead.
+ */
+export const DEFAULT_USER_AGENT = "satohub-langchain-tools/0.1.1";
+
 export type SatohubToolsOptions = SatoHubClientOptions & {
   /** Bring your own client (a shared one, a test double, a preview origin). */
   client?: SatoHubClient;
@@ -63,7 +71,7 @@ function envelope(res: SatoResponse<unknown>): string {
 
 function clientFrom(options: SatohubToolsOptions = {}): SatoHubClient {
   const { client, ...rest } = options;
-  return client ?? new SatoHubClient({ userAgent: "SatoHub-langchain-tools", ...rest });
+  return client ?? new SatoHubClient({ userAgent: DEFAULT_USER_AGENT, ...rest });
 }
 
 export function satohubSearchResourcesTool(options: SatohubToolsOptions = {}) {
