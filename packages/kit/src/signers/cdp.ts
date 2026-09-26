@@ -36,15 +36,9 @@ export type CdpSignerOptions = {
 };
 
 /** ODA chain -> CDP network name. Chains CDP does not name here are refused. */
-export const CDP_NETWORKS: Partial<Record<OdaChain, string>> = {
-  ethereum: "ethereum",
-  sepolia: "ethereum-sepolia",
-  base: "base",
-  "base-sepolia": "base-sepolia",
-  arbitrum: "arbitrum",
-  optimism: "optimism",
-  polygon: "polygon",
-};
+// One network table, shared with the CDP policy compiler.
+import { CDP_NETWORKS } from "../policy/compile/cdp.js";
+export { CDP_NETWORKS };
 
 function asAccount(a: unknown): CdpEvmAccountLike {
   const x = a as CdpEvmAccountLike;
