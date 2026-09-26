@@ -1,2 +1,10 @@
 export { evaluatePreflight } from "./preflight.js";
-export { compileCdpPolicy, type CdpPolicyDocument } from "./compile/cdp.js";
+export {
+  compileCdpPolicy,
+  CDP_NETWORKS,
+  type CdpPolicyDocument,
+  type CdpRule,
+  type CdpCriterion,
+  type CdpCompileResult,
+  type NotCompiled,
+} from "./compile/cdp.js";
