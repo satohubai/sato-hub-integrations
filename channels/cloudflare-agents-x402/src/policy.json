@@ -1,0 +1,11 @@
+{
+  "schema": "sato.policy/v1",
+  "version": 1,
+  "network": "testnet",
+  "allow_chains": ["base-sepolia"],
+  "max_usd_per_trade": 0.1,
+  "max_usd_per_day": 1,
+  "intent_ttl_s": 120,
+  "unknown_verdict": "refuse",
+  "human_approval": false
+}
