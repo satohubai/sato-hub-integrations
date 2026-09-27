@@ -1,0 +1,12 @@
+{
+  "name": "sato-kit",
+  "version": "0.1.0",
+  "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, simulation and a receipt log. Fork by default.",
+  "mcpServers": {
+    "sato-kit": {
+      "command": "npx",
+      "args": ["-y", "@satohub/kit@0.1", "mcp"]
+    }
+  },
+  "contextFileName": "skill/SKILL.md"
+}
