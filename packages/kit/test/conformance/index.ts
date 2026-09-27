@@ -1,7 +1,7 @@
 // ONE table of conformance cases, run through every door. Each door supplies a
 // ConformanceRunner; runConformance(runner) registers the whole table under
-// node:test. Doors: the kit's local MCP server and the AI SDK, AgentKit and
-// Claude Agent SDK subpaths (test/adapters.conformance.test.ts).
+// node:test. Doors: the kit's local MCP server and the AI SDK, AgentKit,
+// Claude Agent SDK, OpenAI Agents SDK and elizaOS subpaths (test/adapters.conformance.test.ts).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_TOOL_NAMES, INTENT_ID_RE } from "../../src/index.js";
