@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sato-kit": {
+      "command": "npx",
+      "args": ["-y", "@satohub/kit@0.1", "mcp"]
+    }
+  }
+}

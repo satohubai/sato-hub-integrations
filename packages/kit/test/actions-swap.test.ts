@@ -98,7 +98,7 @@ test("swap.prepare sato: swap tx, Sato disclosure verbatim, direct quote availab
   assert.equal((b.unsigned as { data: string }).data, SATO_TX.tx.data);
   assert.deepEqual(b.fee_disclosure, { venue: "sato", fee_bps: SATO_TX.sato_fee_bps, fee_recipient: SATO_TX.sato_fee_recipient, statement: SATO_TX.disclosure, direct_quote_available: true });
   assert.equal((b.params as { step: string }).step, "swap");
-  assert.equal(b.facts.usd_value, null);
+  assert.equal(b.facts.usd_value, 10); // USDC sell leg, 10000000 / 10^6 (M1 pricing fix)
   assert.equal(b.facts.venue, "sato");
   const body = f.calls.find((c) => isSato(c.url))!.body as Record<string, unknown>;
   assert.equal(body.mode, "build-tx");
