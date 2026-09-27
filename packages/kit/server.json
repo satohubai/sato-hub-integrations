@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.satohub/kit",
+  "title": "Sato Kit",
+  "description": "Prepare -> execute for onchain agent actions: policy pre-flight, simulation, receipt log.",
+  "version": "0.1.0",
+  "websiteUrl": "https://satohub.ai",
+  "repository": {
+    "url": "https://github.com/satohubai/sato-hub-integrations",
+    "source": "github",
+    "subfolder": "packages/kit"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@satohub/kit",
+      "version": "0.1.0",
+      "packageArguments": [
+        { "type": "positional", "value": "mcp" }
+      ],
+      "transport": { "type": "stdio" }
+    }
+  ]
+}

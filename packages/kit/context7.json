@@ -1,0 +1,13 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Sato Kit",
+  "description": "Prepare -> execute for onchain agent actions: policy pre-flight, simulation, signer hand-off and a hash-chained receipt log. Package @satohub/kit@0.1.",
+  "folders": ["packages/kit"],
+  "excludeFolders": ["packages/kit/test", "packages/kit/dist", "packages/kit/.test-build"],
+  "rules": [
+    "Run `npx -y @satohub/kit@0.1 mcp` for the stdio MCP server; keep the 0.1 pin.",
+    "Always prepare before execute; execute takes only { intent_id }.",
+    "The network is fork by default; mainnet needs an explicit policy opt-in.",
+    "The policy is a pre-flight that explains refusals; the signer enforces limits."
+  ]
+}
