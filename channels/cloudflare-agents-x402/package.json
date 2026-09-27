@@ -1,0 +1,25 @@
+{
+  "name": "sato-cloudflare-agents-x402-example",
+  "description": "A Cloudflare Agent that pays for x402 resources only after a Sato Kit policy pre-flight approves the payment.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types env.d.ts --include-runtime false"
+  },
+  "dependencies": {
+    "@satohub/kit": "0.1.0",
+    "@x402/core": "2.17.0",
+    "@x402/evm": "2.17.0",
+    "@x402/fetch": "2.17.0",
+    "agents": "0.24.0",
+    "hono": "4.13.5",
+    "viem": "2.56.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260927.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.141.0"
+  }
+}
