@@ -130,6 +130,26 @@ export function createKit(opts: KitOptions): Kit {
     });
   }
 
+  /**
+   * USD executed in the current UTC day, from the receipt log. The frozen
+   * sato.receipt/v1 has no USD field, so each intent's usd_value is kept as a
+   * SIDECAR in the intent store (bound into params_digest at prepare) and read
+   * back here by intent_id. An executed receipt today whose USD value is not
+   * known makes the total unknown (null) — never a guessed zero.
+   */
+  async function usdSpentToday(): Promise<number | null> {
+    const day = iso(clock()).slice(0, 10);
+    let total = 0;
+    for (const r of await receipts.read()) {
+      if (r.status !== "executed" || r.created_at.slice(0, 10) !== day) continue;
+      const rec = await store.get(r.intent_id);
+      const usd = (rec?.params as { usd_value?: unknown } | undefined)?.usd_value;
+      if (typeof usd !== "number" || !Number.isFinite(usd)) return null;
+      total += usd;
+    }
+    return total;
+  }
+
   function refusalList(refusals: readonly Refusal[]): string {
     return refusals.map((x) => `${x.rule} (limit ${x.limit}, observed ${x.observed})`).join("; ");
   }
@@ -177,7 +197,8 @@ export function createKit(opts: KitOptions): Kit {
       }
 
       const ttl_s = policy.intent_ttl_s;
-      const verdict = evaluate(policy, { ...built.facts, simulation, ttl_s });
+      const usd_spent_today = await usdSpentToday();
+      const verdict = evaluate(policy, { ...built.facts, usd_spent_today, simulation, ttl_s });
       // simulation_required applies to EVM transactions; an x402 payment is a signed
       // authorization with no transaction to simulate, so those rules do not apply.
       const refusals = built.unsigned.kind === "evm_tx"
@@ -195,7 +216,8 @@ export function createKit(opts: KitOptions): Kit {
       const ok = refusals.length === 0;
 
       // Bind the params AND the payload execute will hand the signer.
-      const bound = { params: built.params, unsigned: built.unsigned };
+      // usd_value rides along as the receipt sidecar read by usdSpentToday().
+      const bound = { params: built.params, unsigned: built.unsigned, usd_value: built.facts.usd_value };
       const params_digest = paramsDigest(bound);
       const expires_at_ms = clock() + ttl_s * 1000;
       const expires_at = iso(expires_at_ms);

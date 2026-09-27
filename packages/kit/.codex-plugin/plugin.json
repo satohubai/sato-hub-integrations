@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sato-kit",
+  "version": "0.1.0",
+  "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, simulation and a receipt log. Fork by default.",
+  "author": { "name": "Sato Hub", "url": "https://satohub.ai" },
+  "homepage": "https://satohub.ai",
+  "repository": "https://github.com/satohubai/sato-hub-integrations",
+  "license": "MIT",
+  "keywords": ["onchain", "mcp", "x402", "swap", "agents"],
+  "skills": "./skill/"
+}

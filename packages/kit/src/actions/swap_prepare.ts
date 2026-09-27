@@ -41,7 +41,80 @@ export type SwapPrepareParams = {
   venue: "sato" | "lifi" | "0x";
   route_via: string | null;
   buy_amount: string | null;
+  /** The trade's USD value handed to the pre-flight; null = unknown. */
+  usd_value: number | null;
+  /** Where usd_value came from, including the assumption it rests on. */
+  usd_value_source: string;
 };
+
+/**
+ * Stablecoins per swap chain (address lowercased -> symbol, decimals). Used only
+ * when the venue returned no USD figure. ASSUMPTION stated wherever it is used:
+ * one unit of the stablecoin is valued at 1 USD.
+ */
+export const STABLECOINS: Record<string, Record<string, { symbol: string; decimals: number }>> = {
+  ethereum: {
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": { symbol: "USDC", decimals: 6 },
+    "0xdac17f958d2ee523a2206206994597c13d831ec7": { symbol: "USDT", decimals: 6 },
+    "0x6b175474e89094c44da98b954eedeac495271d0f": { symbol: "DAI", decimals: 18 },
+  },
+  base: {
+    "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": { symbol: "USDC", decimals: 6 },
+    "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2": { symbol: "USDT", decimals: 6 },
+    "0x50c5725949a6f0c72e6c4a641f24049a917db0cb": { symbol: "DAI", decimals: 18 },
+  },
+  arbitrum: {
+    "0xaf88d065e77c8cc2239327c5edb3a432268e5831": { symbol: "USDC", decimals: 6 },
+    "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9": { symbol: "USDT", decimals: 6 },
+    "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1": { symbol: "DAI", decimals: 18 },
+  },
+  optimism: {
+    "0x0b2c639c533813f4aa9d7837caf62653d097ff85": { symbol: "USDC", decimals: 6 },
+    "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58": { symbol: "USDT", decimals: 6 },
+    "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1": { symbol: "DAI", decimals: 18 },
+  },
+  polygon: {
+    "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359": { symbol: "USDC", decimals: 6 },
+    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": { symbol: "USDT", decimals: 6 },
+    "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": { symbol: "DAI", decimals: 18 },
+  },
+};
+
+function stableOf(chain: string, token: string): { symbol: string; decimals: number } | null {
+  return STABLECOINS[chain]?.[token.toLowerCase()] ?? null;
+}
+
+function baseUnitsToNumber(amount: string, decimals: number): number {
+  const v = BigInt(amount);
+  const d = 10n ** BigInt(decimals);
+  return Number(v / d) + Number(v % d) / Number(d);
+}
+
+/**
+ * The trade's USD value, honestly: the venue's own USD field when it returned
+ * one; else a stablecoin leg (sell leg first, then the quoted buy amount) at
+ * the stated 1-unit = 1-USD assumption; else null (unknown stays unknown).
+ */
+export function deriveUsdValue(q: Pick<SwapQuote, "venue" | "chain" | "sell_token" | "buy_token" | "sell_amount" | "buy_amount" | "sell_usd">): { usd_value: number | null; source: string } {
+  if (q.sell_usd !== null && Number.isFinite(q.sell_usd)) {
+    return { usd_value: q.sell_usd, source: `venue: ${q.venue} returned the sell side's USD value` };
+  }
+  const sell = stableOf(q.chain, q.sell_token);
+  if (sell) {
+    return {
+      usd_value: baseUnitsToNumber(q.sell_amount, sell.decimals),
+      source: `stablecoin leg: sell_amount of ${sell.symbol} / 10^${sell.decimals}, assuming 1 ${sell.symbol} = 1 USD`,
+    };
+  }
+  const buy = stableOf(q.chain, q.buy_token);
+  if (buy && q.buy_amount && /^[0-9]+$/.test(q.buy_amount)) {
+    return {
+      usd_value: baseUnitsToNumber(q.buy_amount, buy.decimals),
+      source: `stablecoin leg: quoted buy_amount of ${buy.symbol} / 10^${buy.decimals}, assuming 1 ${buy.symbol} = 1 USD`,
+    };
+  }
+  return { usd_value: null, source: "unknown: the venue returned no USD value and neither leg is a listed stablecoin" };
+}
 
 export function swapPrepareDescriptor(): ActionDescriptor {
   return {
@@ -169,14 +242,16 @@ export async function buildSwapPrepare(input: unknown, ctx: ActionContext): Prom
     }
   }
 
+  const usd = deriveUsdValue(chosen);
   const params: SwapPrepareParams = {
     step, chain: request.chain, sell_token: request.sell_token, buy_token: request.buy_token, sell_amount: request.sell_amount,
     taker, slippage_bps: request.slippage_bps, venue, route_via: chosen.route_via, buy_amount: chosen.buy_amount,
+    usd_value: usd.usd_value, usd_value_source: usd.source,
   };
   const feeWord = chosen.venue === "sato" ? `Sato fee ${chosen.sato_fee_bps ?? "unknown"} bps (see fee_disclosure)` : "no Sato fee";
   const summary = step === "approve"
     ? `Approve ${spender} to spend exactly ${request.sell_amount} base units of ${request.sell_token} on ${request.chain}, the first step of a swap via ${venue}; prepare the swap again after this lands.`
-    : `Swap ${request.sell_amount} base units of ${request.sell_token} for ${request.buy_token} on ${request.chain} via ${venue}${chosen.route_via ? ` (${chosen.route_via})` : ""}; quoted ${chosen.buy_amount ?? "unknown"}${chosen.buy_amount_min ? `, minimum ${chosen.buy_amount_min}` : ""} base units; ${feeWord}.`;
+    : `Swap ${request.sell_amount} base units of ${request.sell_token} for ${request.buy_token} on ${request.chain} via ${venue}${chosen.route_via ? ` (${chosen.route_via})` : ""}; quoted ${chosen.buy_amount ?? "unknown"}${chosen.buy_amount_min ? `, minimum ${chosen.buy_amount_min}` : ""} base units; ${feeWord}. USD value: ${usd.usd_value ?? "unknown"} (${usd.source}).`;
 
   return {
     params,
@@ -187,7 +262,8 @@ export async function buildSwapPrepare(input: unknown, ctx: ActionContext): Prom
       network: ctx.policy.network,
       token: request.sell_token,
       token_amount_base_units: request.sell_amount,
-      usd_value: chosen.sell_usd,
+      usd_value: usd.usd_value,
+      // Filled by the kit from the receipt log (executed receipts, current UTC day).
       usd_spent_today: null,
       contract: unsigned.to,
       venue,
