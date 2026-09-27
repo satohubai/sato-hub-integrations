@@ -1,12 +1,7 @@
 // ONE table of conformance cases, run through every door. Each door supplies a
 // ConformanceRunner; runConformance(runner) registers the whole table under
-// node:test. Doors today: the AI SDK, AgentKit and Claude Agent SDK subpaths
-// (test/adapters.conformance.test.ts).
-//
-// TODO(merge): add the kit's stdio/in-memory MCP server (src/mcp) as a fourth
-// runner — createKitMcpServer(kit) connected to an MCP Client over
-// InMemoryTransport; `approvalRequired` = the listed tool's
-// _meta["anthropic/requiresUserInteraction"] === true && annotations.destructiveHint.
+// node:test. Doors: the kit's local MCP server and the AI SDK, AgentKit and
+// Claude Agent SDK subpaths (test/adapters.conformance.test.ts).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DEFAULT_TOOL_NAMES, INTENT_ID_RE } from "../../src/index.js";
@@ -66,6 +61,25 @@ export const CASES: Case[] = [
       assert.equal(env.ok, false, JSON.stringify(env));
       if (env.ok) return;
       assert.equal(env.error.code, "policy_refused");
+      const ref = env.error.refusals?.find((x) => x.rule === "max_slippage_bps");
+      assert.ok(ref, JSON.stringify(env.error));
+      assert.equal(ref!.limit, "10");
+      assert.equal(ref!.observed, "50");
+      assert.equal(sent.length, 0);
+    },
+  },
+  {
+    name: "execute of a refused intent is refused naming rule, limit and observed, and sends nothing",
+    policy: { max_slippage_bps: 10 },
+    async run({ r, swapInput, sent }) {
+      const prep = await r.call("swap_prepare", swapInput);
+      assert.equal(prep.ok, false, JSON.stringify(prep));
+      const intent_id = prep.ok ? null : (prep.intent as { intent_id?: string } | undefined)?.intent_id;
+      if (!intent_id) return; // this door returns no intent for a refused prepare, so there is nothing to execute
+      const env = await r.call("execute", { intent_id });
+      assert.equal(env.ok, false, JSON.stringify(env));
+      if (env.ok) return;
+      assert.equal(env.error.code, "policy_refused", JSON.stringify(env.error));
       const ref = env.error.refusals?.find((x) => x.rule === "max_slippage_bps");
       assert.ok(ref, JSON.stringify(env.error));
       assert.equal(ref!.limit, "10");

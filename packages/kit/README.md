@@ -29,3 +29,24 @@ The file intent store and the intent HMAC secret live under `.sato/` by default
 ```
 
 License: MIT
+
+## Host adapters: envelope and error codes
+
+`@satohub/kit/ai-sdk` (`satoKitTools(kit, opts)`), `@satohub/kit/agentkit`
+(`satoKitActionProvider(kit, opts)`) and `@satohub/kit/claude-agent-sdk`
+(`createSatoKitSdkServer(kit, opts)` + `requireApprovalHook()`) are built from
+the same tool surface as the local MCP server (`sato-kit mcp`). Options:
+`{ toolsets?, actions?, policy?, signerKind?, fetch?, statusTimeoutMs? }`
+(AgentKit also takes `approve`). Each adapter tool returns one envelope:
+
+- `{ ok: true, tool, result }`
+- `{ ok: false, tool, error: { code, message, refusals? }, intent? }`
+
+Error codes: `unknown_tool`, `invalid_input`, `policy_refused`,
+`approval_required`, `approval_denied`, `not_configured`, `error`. A policy
+refusal lists each `{ rule, limit, observed }`. `execute` takes `{ intent_id }`
+and nothing else, and every host asks a person before it runs.
+
+On the MCP server a refused prepare is a normal result whose
+`structuredContent.policy.refusals` names each rule; a failed call sets
+`isError` and carries its detail in `_meta["ai.satohub/error"]`.
