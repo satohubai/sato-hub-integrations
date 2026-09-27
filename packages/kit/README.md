@@ -33,11 +33,21 @@ License: MIT
 ## Host adapters: envelope and error codes
 
 `@satohub/kit/ai-sdk` (`satoKitTools(kit, opts)`), `@satohub/kit/agentkit`
-(`satoKitActionProvider(kit, opts)`) and `@satohub/kit/claude-agent-sdk`
-(`createSatoKitSdkServer(kit, opts)` + `requireApprovalHook()`) are built from
-the same tool surface as the local MCP server (`sato-kit mcp`). Options:
+(`satoKitActionProvider(kit, opts)`), `@satohub/kit/claude-agent-sdk`
+(`createSatoKitSdkServer(kit, opts)` + `requireApprovalHook()`),
+`@satohub/kit/openai-agents` (`satoKitOpenAITools(kit, opts)`, OpenAI Agents
+SDK function tools with `needsApproval`) and `@satohub/kit/eliza`
+(`satoKitElizaPlugin(kit, opts)`) are built from the same tool surface as the
+local MCP server (`sato-kit mcp`). Options:
 `{ toolsets?, actions?, policy?, signerKind?, fetch?, statusTimeoutMs? }`
-(AgentKit also takes `approve`). Each adapter tool returns one envelope:
+(AgentKit and elizaOS also take `approve`; neither host has an approval step,
+so `execute` is refused without it).
+
+`@satohub/kit/eliza` is a thin compatibility adapter for existing elizaOS 1.x
+agents, not a supported framework: no Sato template depends on elizaOS, and
+the subpath is dropped rather than patched if an elizaOS release breaks it.
+Its actions read arguments from `options.parameters` (then
+`message.content.parameters`). Each adapter tool returns one envelope:
 
 - `{ ok: true, tool, result }`
 - `{ ok: false, tool, error: { code, message, refusals? }, intent? }`
