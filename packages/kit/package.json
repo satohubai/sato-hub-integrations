@@ -1,6 +1,7 @@
 {
   "name": "@satohub/kit",
   "version": "0.1.0",
+  "mcpName": "ai.satohub/kit",
   "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, pluggable signers and a hash-chained receipt log. Preview, unpublished.",
   "license": "MIT",
   "type": "module",
@@ -60,7 +61,15 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "skill",
+    "server.json",
+    "llms-install.md",
+    "context7.json",
+    "gemini-extension.json",
+    ".mcp.json",
+    ".claude-plugin",
+    ".codex-plugin"
   ],
   "repository": {
     "type": "git",

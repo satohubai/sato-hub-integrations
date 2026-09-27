@@ -263,7 +263,10 @@ export function createKit(opts: KitOptions): Kit {
         throw new Error(`intent ${id} expired at ${record.intent.expires_at}; prepare a new intent`);
       }
       if (!record.intent.policy.ok) {
-        throw new Error(`intent ${id} was refused by the policy pre-flight: ${refusalList(record.intent.policy.refusals)}`);
+        // The refusals ride on the error so every door (CLI, MCP, adapters) can name rule, limit and observed.
+        throw Object.assign(new Error(`intent ${id} was refused by the policy pre-flight: ${refusalList(record.intent.policy.refusals)}`), {
+          refusals: [...record.intent.policy.refusals],
+        });
       }
       if (!opts.signer) throw new Error("no signer configured; execute needs a signer");
       if (record.unsigned.kind !== "evm_tx") {

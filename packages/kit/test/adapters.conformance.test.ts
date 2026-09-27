@@ -1,10 +1,11 @@
 // The conformance table (test/conformance) run through the three host
-// subpaths. The MCP server is the fourth runner, wired at merge (see the TODO
-// in test/conformance/index.ts).
+// subpaths and the kit's local MCP server (the fourth door).
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { satoKitTools } from "../src/adapters/ai-sdk.js";
 import { satoKitActionProvider } from "../src/adapters/agentkit.js";
+import { createKitMcpServer } from "../src/mcp/index.js";
+import { CORE_ACTIONS } from "../src/index.js";
 import { createSatoKitSdkServer, requireApprovalHook } from "../src/adapters/claude-agent-sdk.js";
 import type { ToolEnvelope } from "../src/adapters/_dispatch.js";
 import { runConformance } from "./conformance/index.js";
@@ -92,6 +93,49 @@ export const claudeAgentSdkRunner: ConformanceRunner = {
   },
 };
 
+// The MCP server speaks MCP results, not the adapter envelope, so this runner
+// maps them: a prepare the pre-flight refused is a normal MCP result carrying
+// policy.refusals (the host sees rule/limit/observed in structuredContent) and
+// maps to policy_refused; a schema rejection maps to invalid_input.
+function mcpEnvelope(name: string, res: any): ToolEnvelope {
+  const sc = res.structuredContent as Record<string, any> | undefined;
+  if (res.isError) {
+    const sc = res._meta?.["ai.satohub/error"] as Record<string, any> | undefined;
+    const message = String(sc?.error ?? (res.content ?? []).map((c: any) => c.text ?? "").join(" "));
+    if (Array.isArray(sc?.refusals) && sc!.refusals.length) return { ok: false, tool: name, error: { code: "policy_refused", message, refusals: sc!.refusals } };
+    return { ok: false, tool: name, error: { code: /^invalid arguments/.test(message) ? "invalid_input" : "error", message } };
+  }
+  if (sc && sc.policy && sc.policy.ok === false) {
+    return { ok: false, tool: name, error: { code: "policy_refused", message: "refused by the policy pre-flight", refusals: sc.policy.refusals }, intent: sc as any };
+  }
+  return { ok: true, tool: name, result: sc };
+}
+
+export const mcpRunner: ConformanceRunner = {
+  name: "mcp",
+  async create(kit, policy) {
+    const offline = (async () => { throw new Error("offline"); }) as typeof fetch;
+    const server = createKitMcpServer(kit, { actions: CORE_ACTIONS.list(), policy, fetch: offline });
+    const [a, b] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "satohub-conformance", version: "0.0.0" });
+    await server.connect(a);
+    await client.connect(b);
+    const tools = (await client.listTools()).tools;
+    return {
+      async listTools() { return tools.map((t) => t.name); },
+      async call(name, args) { return mcpEnvelope(name, await client.callTool({ name, arguments: args as Record<string, unknown> })); },
+      async approvalRequired(name) {
+        const t = tools.find((x) => x.name === name);
+        return !!t && t._meta?.["anthropic/requiresUserInteraction"] === true && t.annotations?.destructiveHint === true;
+      },
+      // An MCP host that honours requiresUserInteraction does not send tools/call until a person approves.
+      async callUnapproved() { return null; },
+      async close() { await client.close(); await server.close(); },
+    };
+  },
+};
+
+runConformance(mcpRunner);
 runConformance(aiSdkRunner);
 runConformance(agentKitRunner);
 runConformance(claudeAgentSdkRunner);

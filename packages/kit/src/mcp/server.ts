@@ -86,9 +86,14 @@ function ok(header: string, structured: Record<string, unknown>): CallToolResult
   return { content: [{ type: "text", text: textMirror(header, structured) }], structuredContent: structured };
 }
 
+/** Meta key for a failed call's machine-readable detail (error message, refusals). */
+export const ERROR_META_KEY = "ai.satohub/error";
+
+// A failed call carries no structuredContent: clients validate structuredContent
+// against the tool's outputSchema even when isError is set. The detail goes in
+// _meta (and the text mirror) instead.
 function fail(message: string, extra: Record<string, unknown> = {}): CallToolResult {
-  const structured = { error: message, ...extra };
-  return { isError: true, content: [{ type: "text", text: textMirror(`Error: ${message}`, extra) }], structuredContent: structured };
+  return { isError: true, content: [{ type: "text", text: textMirror(`Error: ${message}`, extra) }], _meta: { [ERROR_META_KEY]: { error: message, ...extra } } };
 }
 
 async function fetchActionsStatus(f: KitFetch, url: string): Promise<unknown | null> {
@@ -222,5 +227,8 @@ export async function runStdio(opts: RunStdioOptions): Promise<void> {
   await server.connect(transport);
   await new Promise<void>((resolve) => {
     server.onclose = () => resolve();
+    // The SDK transport does not end when stdin closes; the host closing stdin ends the session.
+    process.stdin.once("end", () => { void server.close(); });
+    process.stdin.once("close", () => { void server.close(); });
   });
 }

@@ -192,9 +192,23 @@ test("doctor: an invalid policy.json is reported, not replaced by the default", 
   assert.equal(d.network, null);
 });
 
-test("mcp subcommand", { skip: "runStdio is a stub on m1/kit-skeleton; enable once the MCP builder's src/mcp merges" }, () => {
-  const r = run(["mcp", "--toolsets", "all"]);
-  assert.equal(r.code, 0);
+test("mcp subcommand: answers initialize in under 10 s and exits 0 when stdin closes", () => {
+  const init = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "t", version: "0" } } };
+  const list = { jsonrpc: "2.0", id: 2, method: "tools/list" };
+  const cwd = mkdtempSync(join(TMP, "mcp-"));
+  const env: Record<string, string> = { PATH: process.env.PATH ?? "", HOME: TMP, SATO_RPC_URL_BASE: "http://rpc.fixture/base" };
+  const t0 = Date.now();
+  const r = spawnSync(process.execPath, ["--import", pathToFileURL(PRELOAD_FILE).href, MAIN, "mcp", "--toolsets", "all"], {
+    cwd, env, encoding: "utf8", timeout: 20_000,
+    input: JSON.stringify(init) + "\n" + JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n" + JSON.stringify(list) + "\n",
+  });
+  const ms = Date.now() - t0;
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(ms < 10_000, `mcp cold start + session took ${ms} ms`);
+  const msgs = r.stdout.trim().split("\n").map((l) => JSON.parse(l));
+  assert.equal(msgs.find((m) => m.id === 1).result.serverInfo.name, "sato-kit");
+  const names = msgs.find((m) => m.id === 2).result.tools.map((t: { name: string }) => t.name);
+  assert.ok(names.includes("erc8004_lookup") && names.includes("tx_simulate"));
 });
 
 test("mcp rejects a bad --toolsets before starting", () => {
