@@ -49,6 +49,14 @@
       "types": "./dist/adapters/claude-agent-sdk.d.ts",
       "default": "./dist/adapters/claude-agent-sdk.js"
     },
+    "./openai-agents": {
+      "types": "./dist/adapters/openai-agents.d.ts",
+      "default": "./dist/adapters/openai-agents.js"
+    },
+    "./eliza": {
+      "types": "./dist/adapters/eliza.d.ts",
+      "default": "./dist/adapters/eliza.js"
+    },
     "./mcp": {
       "types": "./dist/mcp/index.d.ts",
       "default": "./dist/mcp/index.js"
@@ -83,12 +91,14 @@
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "peerDependencies": {
-    "viem": "^2",
-    "@x402/fetch": "*",
-    "@coinbase/cdp-sdk": "*",
-    "ai": "^7",
+    "@anthropic-ai/claude-agent-sdk": ">=0.3",
     "@coinbase/agentkit": ">=0.10",
-    "@anthropic-ai/claude-agent-sdk": ">=0.3"
+    "@coinbase/cdp-sdk": "*",
+    "@x402/fetch": "*",
+    "ai": "^7",
+    "viem": "^2",
+    "@openai/agents": ">=0.18",
+    "@elizaos/core": "^1.7"
   },
   "peerDependenciesMeta": {
     "@x402/fetch": {
@@ -105,11 +115,19 @@
     },
     "@anthropic-ai/claude-agent-sdk": {
       "optional": true
+    },
+    "@openai/agents": {
+      "optional": true
+    },
+    "@elizaos/core": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.283",
     "@coinbase/agentkit": "0.10.4",
+    "@elizaos/core": "1.7.2",
+    "@openai/agents": "0.18.0",
     "@types/node": "^22.7.5",
     "ai": "7.0.116",
     "fast-check": "4.10.2",
