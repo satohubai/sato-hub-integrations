@@ -6,7 +6,8 @@
   "license": "MIT",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "channels"
   ],
   "scripts": {
     "build": "npm run build -w satohub-core && npm run build --workspaces --if-present",
