@@ -1,12 +1,16 @@
-// The conformance table (test/conformance) run through the three host
-// subpaths and the kit's local MCP server (the fourth door).
+// The conformance table (test/conformance) run through the five host
+// subpaths and the kit's local MCP server (six doors).
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { satoKitTools } from "../src/adapters/ai-sdk.js";
 import { satoKitActionProvider } from "../src/adapters/agentkit.js";
+import { satoKitOpenAITools } from "../src/adapters/openai-agents.js";
+import { satoKitElizaPlugin } from "../src/adapters/eliza.js";
+import { RunContext } from "@openai/agents";
 import { createKitMcpServer } from "../src/mcp/index.js";
 import { CORE_ACTIONS } from "../src/index.js";
 import { createSatoKitSdkServer, requireApprovalHook } from "../src/adapters/claude-agent-sdk.js";
+import assert from "node:assert/strict";
 import type { ToolEnvelope } from "../src/adapters/_dispatch.js";
 import { runConformance } from "./conformance/index.js";
 import type { ConformanceRunner } from "./conformance/index.js";
@@ -93,6 +97,61 @@ export const claudeAgentSdkRunner: ConformanceRunner = {
   },
 };
 
+export const openAIAgentsRunner: ConformanceRunner = {
+  name: "openai-agents",
+  async create(kit, policy) {
+    const tools = satoKitOpenAITools(kit, { policy });
+    const ctx = new RunContext({});
+    const find = (name: string) => tools.find((t) => t.name === name);
+    return {
+      async listTools() { return tools.map((t) => t.name); },
+      async call(name, args) {
+        const t = find(name);
+        if (!t) return { ok: false, tool: name, error: { code: "unknown_tool", message: name } };
+        // What the runner does once a call is approved: invoke with the model's JSON arguments.
+        const out: unknown = await t.invoke(ctx, JSON.stringify(args ?? {}), { toolCall: { type: "function_call", callId: "c1", name, arguments: JSON.stringify(args ?? {}) } } as any);
+        return (typeof out === "string" ? JSON.parse(out) : out) as ToolEnvelope;
+      },
+      async approvalRequired(name, args) {
+        const t = find(name);
+        return !!t && (await t.needsApproval(ctx, args as any, "c1"));
+      },
+      // The Agents SDK runner returns an interruption for a needsApproval tool and never
+      // invokes it until result.state.approve() is called.
+      async callUnapproved() { return null; },
+    };
+  },
+};
+
+export const elizaRunner: ConformanceRunner = {
+  name: "eliza",
+  async create(kit, policy) {
+    const approved = satoKitElizaPlugin(kit, { policy, approve: async () => true });
+    const bare = satoKitElizaPlugin(kit, { policy });
+    const eliza: any = await import("@elizaos/core"); // elizaOS's own plugin check
+    assert.deepEqual(eliza.validatePlugin(approved), { isValid: true, errors: [] });
+    const invoke = async (plugin: typeof approved, name: string, args: unknown): Promise<ToolEnvelope> => {
+      const a = plugin.actions.find((x) => x.sato_tool === name);
+      if (!a) return { ok: false, tool: name, error: { code: "unknown_tool", message: name } };
+      const msg = { content: { text: "" } } as any;
+      assert.equal(await a.validate({} as any, msg), true);
+      const res: any = await a.handler({} as any, msg, undefined, { parameters: args } as any);
+      return res.data.envelope as ToolEnvelope;
+    };
+    return {
+      async listTools() { return approved.actions.map((a) => String(a.sato_tool)); },
+      call: (name, args) => invoke(approved, name, args),
+      async approvalRequired(name, args) {
+        let asked = false;
+        const probe = satoKitElizaPlugin(kit, { policy, approve: async () => { asked = true; return false; } });
+        const env = await probe.run(name, args);
+        return asked && !env.ok && env.error.code === "approval_denied";
+      },
+      callUnapproved: (name, args) => invoke(bare, name, args),
+    };
+  },
+};
+
 // The MCP server speaks MCP results, not the adapter envelope, so this runner
 // maps them: a prepare the pre-flight refused is a normal MCP result carrying
 // policy.refusals (the host sees rule/limit/observed in structuredContent) and
@@ -139,3 +198,5 @@ runConformance(mcpRunner);
 runConformance(aiSdkRunner);
 runConformance(agentKitRunner);
 runConformance(claudeAgentSdkRunner);
+runConformance(openAIAgentsRunner);
+runConformance(elizaRunner);
