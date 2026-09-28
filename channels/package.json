@@ -1,0 +1,21 @@
+{
+  "name": "sato-channel-drafts",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Drafts for placing the Sato Kit in other projects' channels. Nothing here is published or submitted.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "(cd .. && npm run build -w @satohub/kit) && tsc -p tsconfig.json --noEmit",
+    "test": "node test/build.mjs && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@satohub/kit": "*"
+  },
+  "devDependencies": {
+    "@coinbase/agentkit": "0.10.4",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3",
+    "viem": "2.56.9"
+  }
+}

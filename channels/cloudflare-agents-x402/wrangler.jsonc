@@ -1,0 +1,10 @@
+{
+  "name": "sato-x402-budget-agent",
+  "compatibility_date": "2026-06-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.ts",
+  "durable_objects": {
+    "bindings": [{ "class_name": "PayAgent", "name": "PAY_AGENT" }]
+  },
+  "migrations": [{ "new_sqlite_classes": ["PayAgent"], "tag": "v1" }]
+}
