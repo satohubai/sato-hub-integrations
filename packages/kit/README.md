@@ -113,6 +113,7 @@ are built at runtime from the provider you pass, and appear under toolset `all`.
 | `@satohub/kit/mcp` | the local MCP server (stdio) |
 | `@satohub/kit/cli` | the `sato-kit` CLI as a function |
 | `@satohub/kit/sato-os` | `attachToSatoOs`, `proposeIntent` |
+| `@satohub/kit/goat` | `fromGoatPlugin(plugin, { chain })` — consume an existing GOAT plugin with the kit's guarantees |
 
 ### Signers
 
@@ -232,6 +233,22 @@ const kit = createKit({ ...opts, actions: [...coreActions(), ...actions] });
 - The USD value of a consumed action is unknown, so a `max_usd_*` cap refuses it under `unknown_price`; `max_per_trade` reads the ERC-20 amount or the native value off the captured transaction.
 - AgentKit's own `@CreateAction` decorator posts an invocation analytics event to `cca-lite.coinbase.com` on every invoke; the kit does not block or add to it.
 - Consumed actions appear under toolsets `"all"` and through `actions_search` / `actions_describe`; the default MCP profile is unchanged.
+
+## Consuming an existing GOAT plugin (`@satohub/kit/goat`)
+
+`await fromGoatPlugin(plugin, { chain })` works like `fromAgentKitProvider`: reads run as reads; a write runs the plugin's own tool against a capturing wallet that records the one transaction instead of sending it, and that transaction becomes an ordinary intent (simulate, pre-flight, `execute(intent_id)` once with your signer). Message or typed-data signing, a paymaster request, or more than one transaction is refused with the reason. GOAT has been quiet upstream; if your install holds two copies of `@goat-sdk/core`, GOAT's own wallet lookup can miss the wallet — keep one copy.
+
+## Safe proposals
+
+`safe.propose` builds the SafeTx for the Safe's owners to sign; the policy pre-flight applies to the call inside it. When the intent has a Safe Transaction Service target, `execute` signs and submits it and the receipt carries `safe_tx_hash`; without one, the receipt carries the signature as `typed_data_signature`. For Safe's hosted gateway, pass `safeTxService: { apiKey }` to `createKit` (or opt in to reading `SAFE_API_KEY`); the key is sent as `Authorization: Bearer …` only to `api.safe.global` or an origin you configure, and is never logged or written to a receipt.
+
+## Solana
+
+The Solana actions need a Solana RPC (`solanaRpc` in `createKit`). `solanaLocalSigner` is devnet-only and needs `@solana/kit` 8 or later installed next to the kit (`npm i @solana/kit@^8`); it is not declared as a peer so that installs holding an older `@solana/kit` (for example through AgentKit) still resolve.
+
+## Not included: Stripe MPP
+
+`mpp.prepare` is not built. Its client (`mppx`) is pre-1.0 with breaking changes in minor releases, and its payment methods do not map onto one unsigned transaction the kit's signer executes. Reasons and sources: [docs/mpp-research.md](docs/mpp-research.md).
 
 ## Sato OS hand-off (`@satohub/kit/sato-os`)
 
