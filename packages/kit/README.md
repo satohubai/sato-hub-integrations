@@ -14,6 +14,10 @@ It never holds funds and ships no keys.
 - **Pre-flight vs enforcement.** The kit's policy check runs before an intent is returned and says
   which rule refused and why. It does not enforce anything once a key is in play. Enforcement lives
   in the signer (e.g. a CDP policy compiled from the same file).
+- **`scan.payto_changed`.** The `scan` block of `policy.json` records `payto_changed`
+  (`caution` | `refuse` | `off`), but it is enforced only by hosts that implement it. The offline
+  guard in `satohub-core` (`scanRecipient`) does not enforce it today: a changed x402 payTo needs the
+  payee's earlier value, which the offline check is not given.
 - **Swaps are venue-neutral.** Any venue is accepted. Sato Swap is the labelled default and its fee is
   disclosed on every response, with a no-Sato-fee quote alongside; `venue: "direct"` skips Sato entirely.
 

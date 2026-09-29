@@ -163,6 +163,105 @@ The main entry point does not import Zod, so it stays dependency-free; Zod is an
 import { preflightSchema } from "satohub-core/schemas";
 ```
 
+## Sato Scan: check the recipient before you sign
+
+Address poisoning and fake stablecoins both work by looking right at a glance.
+Two offline checks run in your agent's own signing path, before anything is
+signed. They read what you pass in against a stablecoin table that ships in this
+package (a record of what each issuer names for its token on each chain, dated
+`SCAN_TABLE_AS_OF`). No network, no key, nothing is sent.
+
+```ts
+import { scanRecipient, sanitizeTransfers, checkRecipientHosted } from "satohub-core";
+
+const r = scanRecipient({
+  chain: "Base",
+  to: payTo,                                   // where the 402 says to pay
+  token: { address: asset, symbol: "USDC" },   // by contract address; the symbol is only a label
+  book: knownAddresses,                        // addresses you have paid or been paid by
+  allowRecipients: policy.allow_recipients,    // as in policy.json: chain-qualified, e.g. "base:0x..."
+  treasury: false,                             // true: `to` must be in allowRecipients
+  policy: policy.scan,                         // the generated `scan` block; omit for the strict defaults
+});
+if (r.verdict === "no") throw new Error(`${r.rule}: ${r.reason} (limit: ${r.limit})`);
+
+// Transfer history from an indexer: drop rows whose token imitates a stablecoin.
+const { rows, removed, unchecked, notes } = sanitizeTransfers(history, { chain: "Base" });
+```
+
+`allowRecipients` and `book` take the entries as they are written in `policy.json`,
+chain-qualified as `<chain>:<address>` (`base:0x...`). Only the entries for `chain`
+are used; entries for other chains are ignored and counted in `notes`. A raw address
+with no `<chain>:` prefix is accepted and applies to `chain`. EVM addresses compare
+case-insensitively; Solana addresses are case-sensitive.
+
+- A token whose address is not the listed contract but which is labelled as a
+  stablecoin is refused (`token.not_canonical`). The symbol never rescues a
+  wrong address.
+- A recipient that differs from a known address but agrees with it on the first
+  3 or more and last 3 or more characters, 7 or more together, is refused
+  (`recipient.lookalike`), with the address it imitates and the matched ends.
+- A recipient that is exactly in `book` (or `allowRecipients`) is still compared with
+  the entries recorded before it. If it imitates one, the answer is `caution` with
+  `recipient.lookalike_in_book`, naming the earlier address, under `refuse` and
+  `caution` alike (`off` skips it). "Before" means list position: `allowRecipients`
+  counts as recorded before `book`, and inside each list the first entry is the
+  oldest. An entry that imitates nothing recorded before it stays `go`. Pass `book`
+  oldest first: an unordered book gives order-dependent answers, and an
+  `allowRecipients` entry is never flagged against a later `book` entry.
+- In treasury mode a recipient outside `allowRecipients` is refused
+  (`recipient.not_allowlisted`).
+- An address that imitates nothing you know is `unknown`: this check holds no
+  record of it. `go` means an address you already know and nothing found in the
+  token check. Neither is a statement that an address or token is fine.
+
+`sanitizeTransfers` reads a token address only from an explicit token field:
+`token_address`, `tokenAddress`, `contractAddress`, `contract_address` or `mint`, and
+`contract` or `token` when the value is address-shaped for the chain (a symbol or a
+nested object there is not an address). A row's `address` field is never read: in
+indexer output it is usually a wallet, not the token. Pass `read` for a row shape it
+does not know. A row
+that carries a stablecoin label but no readable token address cannot be checked: it
+is kept, returned in `unchecked`, and counted in `notes`. Kept is not checked.
+
+This is a pre-flight. Enforcement lives in the signer that calls it. Generated
+`policy.json` files carry a `scan` block; `SCAN_POLICY_DEFAULTS` holds the strict
+defaults, and `resolveScanPolicy` reads a block that was hand-edited or partial:
+an undefined, misspelt or wrong-typed value uses the default for that field (and says
+so in `notes`), never "off". What each field does here:
+
+| field | read by `scanRecipient` |
+| --- | --- |
+| `lookalike` | yes: `refuse` (default), `caution`, `off` |
+| `token` | yes: `refuse_not_canonical` (default), `off` |
+| `treasury_recipients` | yes: `allowlist_only` (default), `off`, applied when you pass `treasury: true` |
+| `payto_changed` | no. Recorded in `policy.json` and enforced only by hosts that implement it; this offline guard does not enforce it today (it is not given the payee's earlier value) |
+| `hosted_check` | no. A signal for your code: call `checkRecipientHosted` when `true`; `scanRecipient` never makes a network call |
+
+`params` overrides the look-alike numbers (`prefix_min`, `suffix_min`, `total_min`,
+`solana_prefix_min`, `solana_suffix_min`). A value is used only if it is a whole
+number from 1 up to the address body it counts (40 for EVM, 44 for Solana, 80 for
+`total_min`); `undefined`, `NaN`, zero, a negative, a fraction, an oversized value or a
+non-number uses the default for that field and says so in `notes`, so a bad value never
+loosens the rule.
+
+The `scan` block is not part of `policy_digest` (that hash covers the policy as bound,
+before the block is added); the manifest's sha256 of `policy.json` does cover it.
+
+`checkRecipientHosted` is optional. The hosted check sends `chain`, `to` and `token` only. `from`, `origin` and `amount` are sent only if the caller opts in.
+It posts to `/api/scan/recipient` and returns the signed `sato.scan.recipient/v1`
+reading (watchlist, declared payTo history). Opt in per field with
+`include: ["from"]` (the paying wallet, which enables the checks that need history),
+`"origin"` or `"amount"`; a field on the input that is not named in `include` is not
+sent, and nothing outside those four fields ever is. It fails open: a failed call comes
+back as `unknown` with the error, a 4xx is never retried, and it never blocks a
+payment by itself.
+
+```ts
+await checkRecipientHosted({ chain: "Base", to: payTo, token: asset, from: myWallet });                     // sends chain, to, token
+await checkRecipientHosted({ chain: "Base", to: payTo, token: asset, from: myWallet }, { include: ["from"] }); // also sends from
+```
+
 ## Non-custodial
 
 Nothing here signs a transaction, holds a key, deploys or moves funds.
