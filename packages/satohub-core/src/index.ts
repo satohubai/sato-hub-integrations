@@ -3,6 +3,7 @@ export * from "./signing.js";
 export * from "./verify.js";
 export * from "./custody.js";
 export * from "./guard.js";
+export * from "./scan.js";
 
 /**
  * The sentence every integration in this repo repeats, because a reader who

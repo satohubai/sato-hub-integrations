@@ -20,6 +20,7 @@
  */
 
 import type { CheckResponse, CustodySubjectKind, InstallCheckResponse } from "./custody.js";
+import type { RecipientHostedInput, RecipientIncludeField, RecipientReading } from "./scan.js";
 import { verifyBodySignature, verifyResponseSignature, type Jwks, type VerifyResult } from "./verify.js";
 
 /**
@@ -226,6 +227,17 @@ export class SatoHubClient {
     return this.postJson("/api/check/install", body) as Promise<SatoResponse<InstallCheckResponse>>;
   }
 
+  /**
+   * Sato Scan: the hosted recipient reading (signed `sato.scan.recipient/v1`).
+   * Sends `chain`, `to` and `token` only. `from`, `origin` and `amount` leave the machine only
+   * when you name them in `opts.include`, even if they are on `input`. Opt-in; the offline
+   * check in `scanRecipient` needs no call. Prefer `checkRecipientHosted`, which fails open.
+   */
+  async checkRecipient(input: RecipientHostedInput, opts: { include?: readonly RecipientIncludeField[] } = {}): Promise<SatoResponse<RecipientReading>> {
+    if (!input?.chain?.trim() || !input?.to?.trim()) throw new Error("chain and to are required.");
+    return this.postJson("/api/scan/recipient", recipientBody(input, opts.include)) as Promise<SatoResponse<RecipientReading>>;
+  }
+
   // ── wire ─────────────────────────────────────────────────────────────────
 
   private headers(extra: Record<string, string> = {}): Record<string, string> {
@@ -337,6 +349,13 @@ export class SatoHubClient {
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
+
+/** The documented hosted-scan body: chain, to, token. `from`, `origin` and `amount` are added only when named in `include`. */
+export function recipientBody(input: RecipientHostedInput, include: readonly RecipientIncludeField[] = []): Record<string, unknown> {
+  const body: Record<string, unknown> = { chain: input.chain, to: input.to, token: input.token };
+  for (const k of include) if (k === "from" || k === "origin" || k === "amount") body[k] = input[k];
+  return prune(body);
+}
 
 function prune<T extends Record<string, unknown>>(input: T): Record<string, unknown> {
   const out: Record<string, unknown> = {};
