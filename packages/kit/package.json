@@ -72,6 +72,10 @@
     "./sato-os": {
       "types": "./dist/sato-os/index.d.ts",
       "default": "./dist/sato-os/index.js"
+    },
+    "./goat": {
+      "types": "./dist/adapters/goat.d.ts",
+      "default": "./dist/adapters/goat.js"
     }
   },
   "files": [
@@ -102,13 +106,14 @@
     "@anthropic-ai/claude-agent-sdk": ">=0.3",
     "@coinbase/agentkit": ">=0.10",
     "@coinbase/cdp-sdk": "*",
+    "@elizaos/core": "^1.7",
+    "@goat-sdk/core": ">=0.4.9 <0.6",
+    "@langchain/core": ">=0.3",
+    "@openai/agents": ">=0.18",
+    "@solana/kit": ">=8",
     "@x402/fetch": "*",
     "ai": "^7",
-    "viem": "^2",
-    "@openai/agents": ">=0.18",
-    "@elizaos/core": "^1.7",
-    "@langchain/core": ">=0.3",
-    "@solana/kit": ">=8"
+    "viem": "^2"
   },
   "peerDependenciesMeta": {
     "@x402/fetch": {
@@ -137,12 +142,16 @@
     },
     "@solana/kit": {
       "optional": true
+    },
+    "@goat-sdk/core": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.283",
     "@coinbase/agentkit": "0.10.4",
     "@elizaos/core": "1.7.2",
+    "@goat-sdk/plugin-erc20": "0.2.14",
     "@langchain/core": "1.2.13",
     "@openai/agents": "0.18.0",
     "@solana/kit": "8.4.0",
