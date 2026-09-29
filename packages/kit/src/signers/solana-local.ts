@@ -34,7 +34,10 @@ async function loadSolanaKit(): Promise<SolanaKitModule> {
   try {
     return await import("@solana/kit");
   } catch {
-    throw new Error("solanaLocalSigner needs the optional peer dependency @solana/kit (npm i @solana/kit)");
+    // Not declared as a peer on purpose: an optional peer range still makes npm
+    // refuse installs whose tree already holds another major (AgentKit's
+    // @coinbase/cdp-sdk pulls @solana/kit 5.x). Only this signer needs it.
+    throw new Error("solanaLocalSigner needs @solana/kit 8 or later installed alongside the kit (npm i @solana/kit@^8)");
   }
 }
 

@@ -110,7 +110,6 @@
     "@goat-sdk/core": ">=0.4.9 <0.6",
     "@langchain/core": ">=0.3",
     "@openai/agents": ">=0.18",
-    "@solana/kit": ">=8",
     "@x402/fetch": "*",
     "ai": "^7",
     "viem": "^2"
@@ -138,9 +137,6 @@
       "optional": true
     },
     "@langchain/core": {
-      "optional": true
-    },
-    "@solana/kit": {
       "optional": true
     },
     "@goat-sdk/core": {
