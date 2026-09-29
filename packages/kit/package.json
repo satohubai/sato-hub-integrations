@@ -107,7 +107,8 @@
     "viem": "^2",
     "@openai/agents": ">=0.18",
     "@elizaos/core": "^1.7",
-    "@langchain/core": ">=0.3"
+    "@langchain/core": ">=0.3",
+    "@solana/kit": ">=8"
   },
   "peerDependenciesMeta": {
     "@x402/fetch": {
@@ -133,6 +134,9 @@
     },
     "@langchain/core": {
       "optional": true
+    },
+    "@solana/kit": {
+      "optional": true
     }
   },
   "devDependencies": {
@@ -141,6 +145,7 @@
     "@elizaos/core": "1.7.2",
     "@langchain/core": "1.2.13",
     "@openai/agents": "0.18.0",
+    "@solana/kit": "8.4.0",
     "@types/node": "^22.7.5",
     "ai": "7.0.116",
     "fast-check": "4.10.2",

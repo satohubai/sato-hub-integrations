@@ -1,0 +1,72 @@
+{
+  "_source": "https://api.mainnet-beta.solana.com getTokenAccountsByOwner (first 2 accounts kept)",
+  "_note": "Recorded 2026-09-28 from the public endpoint named in _source; trimmed. The JSON-RPC 'result' only.",
+  "result": {
+    "context": {
+      "slot": 451528194,
+      "apiVersion": "4.3.0-beta.2"
+    },
+    "value": [
+      {
+        "pubkey": "3hNzYSQs2ziFhnXYzxNqQ1HGnW8pQs9Gf4KfoRErfw9i",
+        "account": {
+          "lamports": 2500000,
+          "data": {
+            "program": "spl-token",
+            "parsed": {
+              "info": {
+                "closeAuthority": "8GZEyMyMWMEEqbH5v7LsTmtQttTDaTnsLdz1wPSqBZMX",
+                "isNative": false,
+                "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "owner": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                "state": "initialized",
+                "tokenAmount": {
+                  "amount": "1000000",
+                  "decimals": 6,
+                  "uiAmount": 1.0,
+                  "uiAmountString": "1"
+                }
+              },
+              "type": "account"
+            },
+            "space": 165
+          },
+          "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "executable": false,
+          "rentEpoch": 18446744073709551615,
+          "space": 165
+        }
+      },
+      {
+        "pubkey": "4YQqQKiuxVBye2MdTCZ8GtSvQXeayMbC6Weepyrgg7DG",
+        "account": {
+          "lamports": 2500000,
+          "data": {
+            "program": "spl-token",
+            "parsed": {
+              "info": {
+                "closeAuthority": "HcXaUw7MRftsRSAnHiEK2UgRK9SPuSNQ486jGv91UGoU",
+                "isNative": false,
+                "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "owner": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                "state": "initialized",
+                "tokenAmount": {
+                  "amount": "0",
+                  "decimals": 6,
+                  "uiAmount": 0.0,
+                  "uiAmountString": "0"
+                }
+              },
+              "type": "account"
+            },
+            "space": 165
+          },
+          "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "executable": false,
+          "rentEpoch": 18446744073709551615,
+          "space": 165
+        }
+      }
+    ]
+  }
+}

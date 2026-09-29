@@ -50,11 +50,19 @@ A write action is two calls. `prepare` returns a `PreparedIntent`: `intent_id`, 
 
 `intent_id = "si_" + base64url(HMAC-SHA256(secret, canonicalJson({ action, params_digest, expires_at, nonce })))`, where `params_digest = "sha256:" + hex(sha256(canonicalJson(params)))`. The implementation refuses an id it did not mint, an expired id, and an id already executed.
 
+The `unsigned` payload is one of four kinds; any other kind is refused:
+- `evm_tx` — `chain, chain_id, from|null, to, data, value` (wei, decimal string).
+- `x402_payment` — `network, resource, pay_to, asset, amount` (base units). Signing has no on-chain effect by itself, so the intent states why no simulation applies.
+- `typed_data` (additive in Phase 2 wave 2) — EIP-712 `chain, chain_id, signer, domain, types, primaryType, message`, and `submit`: `null` (return the signature) or `{ kind: "safe_tx_service", url, safe_address }` (POST it to the Safe Transaction Service). Nothing moves until the Safe's owners execute, so `simulation_required` does not apply; the intent states that reason and never reports a simulation it did not run.
+- `solana_tx` (additive in Phase 2 wave 2) — `chain` (`solana` \| `solana-devnet`), `fee_payer`, `transaction_base64` (the serialized UNSIGNED transaction), `recent_blockhash`, `last_valid_block_height`. Simulated with the RPC's `simulateTransaction` (sigVerify false) and must succeed, like `evm_tx`. Executing it needs the signer's optional `signSolanaTransaction` / `sendSolanaTransaction`; without them execute fails naming the capability.
+
 A refusal is `{ rule, limit, observed, message }`. `limit` and `observed` are always strings; `"unknown"` when unreadable. Unknown readings refuse by default.
 
 ## 7. Receipts
 
 One JSON line per state change, `schema: "sato.receipt/v1"`: `seq` (from 0, no gaps), `prev_hash` (`sha256:` + 64 zeros for seq 0), `hash = "sha256:" + hex(sha256(canonicalJson(receipt without hash)))`, `intent_id`, `action`, `chain`, `params_digest`, `policy`, `simulation`, `fee_disclosure`, `tx_hash`, `status` (`prepared` \| `refused` \| `executed` \| `failed` \| `expired`), `created_at`, `mandate`.
+
+Optional, additive in Phase 2 wave 2 (absent is always valid): `safe_tx_hash` — a typed_data proposal's safeTxHash at the Safe Transaction Service (not an on-chain transaction; `tx_hash` stays null) — and `signature` — a solana_tx's base58 transaction signature. `tx_hash` always means an EVM transaction hash.
 
 The `mandate` block (`kind: "intent"`, `intent_id`, `action`, `policy_digest`, `expires_at`, `approval`) is aligned with the AP2 v0.2 / Verifiable Intent vocabulary. It is not a certified implementation of either.
 
