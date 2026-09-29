@@ -64,6 +64,10 @@
     "./cli": {
       "types": "./dist/cli/index.d.ts",
       "default": "./dist/cli/index.js"
+    },
+    "./langchain": {
+      "types": "./dist/adapters/langchain.d.ts",
+      "default": "./dist/adapters/langchain.js"
     }
   },
   "files": [
@@ -98,7 +102,8 @@
     "ai": "^7",
     "viem": "^2",
     "@openai/agents": ">=0.18",
-    "@elizaos/core": "^1.7"
+    "@elizaos/core": "^1.7",
+    "@langchain/core": ">=0.3"
   },
   "peerDependenciesMeta": {
     "@x402/fetch": {
@@ -121,12 +126,16 @@
     },
     "@elizaos/core": {
       "optional": true
+    },
+    "@langchain/core": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.283",
     "@coinbase/agentkit": "0.10.4",
     "@elizaos/core": "1.7.2",
+    "@langchain/core": "1.2.13",
     "@openai/agents": "0.18.0",
     "@types/node": "^22.7.5",
     "ai": "7.0.116",

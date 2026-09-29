@@ -6,6 +6,9 @@
 // this file imports nothing heavy at the top: the config loader (viem), the
 // tool surface and the MCP server are loaded only by the command that needs them.
 import { KIT_VERSION } from "../version.js";
+// drift.ts imports only node:fs and node:path, so it is cheap to load eagerly for its formatter.
+import { driftLines } from "./drift.js";
+import type { DriftReport } from "./drift.js";
 
 export type CliIo = {
   stdout: (s: string) => void;
@@ -13,7 +16,7 @@ export type CliIo = {
   env: Record<string, string | undefined>;
   cwd: string;
   isTTY: boolean;
-  /** Used by doctor to read Sato Status. Defaults to globalThis.fetch. */
+  /** Used by doctor to read Sato Status and template drift. Defaults to globalThis.fetch. */
   fetch?: typeof fetch;
 };
 
@@ -23,6 +26,8 @@ export const EXIT_REFUSED = 2;
 
 /** How long doctor waits for Sato Status before reporting it unavailable. */
 export const DOCTOR_STATUS_TIMEOUT_MS = 3_000;
+/** How long doctor waits for the template drift check before reporting it unavailable. */
+export const DOCTOR_DRIFT_TIMEOUT_MS = 3_000;
 
 export const HELP = `sato-kit ${KIT_VERSION} — prepare -> execute for onchain agent actions
 
@@ -31,7 +36,7 @@ Usage:
   sato-kit prepare <action> --input '<json>'   build an intent; nothing is signed
   sato-kit execute --intent <intent_id>        hand one prepared intent to the signer
   sato-kit mcp [--toolsets default|all]        local MCP server over stdio
-  sato-kit doctor                              check config and Sato Status
+  sato-kit doctor                              check config, Sato Status and template drift
 
 <action> is an action id (swap.prepare) or a tool name (swap_prepare).
 Options: --json  --policy <file>  --rpc <url>  --help  --version
@@ -212,6 +217,11 @@ async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
     import("../actions/registry.js"),
   ]);
   const statusP = readActionsStatus(io.fetch);
+  const { readTemplateDrift } = await import("./drift.js");
+  const driftP = readTemplateDrift(io.cwd, (io.fetch ?? globalThis.fetch) as never, {
+    timeoutMs: DOCTOR_DRIFT_TIMEOUT_MS,
+    userAgent: `@satohub/kit/${KIT_VERSION}`,
+  });
 
   let policy: Out;
   let network: string | null = null;
@@ -231,6 +241,7 @@ async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
     policy = { valid: false, error: e instanceof Error ? e.message : String(e) };
   }
   const s = await statusP;
+  const drift = await driftP;
   const rows = status
     ? status.tools
     : defs.map((d) => ({ name: d.name, result: s.doc ? "not_evaluated" : "unknown" }));
@@ -249,6 +260,7 @@ async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
         const d = defs.find((x) => x.name === r.name);
         return { id: d?.oda_id ?? null, ...r };
       }),
+      drift,
     },
   };
 }
@@ -269,6 +281,7 @@ function human(command: Command, out: Out): string {
       const extra = a.result === "red" ? ` (failing step ${a.failing_step ?? "?"}, upstream ${a.upstream_version ?? "?"})` : "";
       lines.push(`  ${String(a.id ?? a.name).padEnd(18)} ${a.result}${a.last_green ? `, last passed its checks ${a.last_green}` : ""}${extra}`);
     }
+    if (r.drift) lines.push(...driftLines(r.drift as DriftReport));
     return lines.join("\n") + "\n";
   }
   return JSON.stringify(out.result ?? out.intent ?? out.receipt, null, 2) + "\n";
