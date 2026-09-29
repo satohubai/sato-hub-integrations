@@ -17,7 +17,7 @@ import type {
   SimulationResult,
   UnsignedEvmTx,
   UnsignedPayload,
-  UnsignedX402Payment,
+  UnsignedSolanaTx,
 } from "./spec/index.js";
 
 /** Wall clock in epoch milliseconds. Injected so tests are deterministic. */
@@ -28,6 +28,25 @@ export type KitFetch = typeof fetch;
 
 /** Returns a viem PublicClient for a chain. In fork mode it points at an anvil URL. */
 export type RpcProvider = (chain: OdaChain) => PublicClient;
+
+/** The two Solana clusters an UnsignedSolanaTx may name. */
+export type SolanaCluster = UnsignedSolanaTx["chain"];
+
+/**
+ * The minimal Solana JSON-RPC seam the kit uses (simulateTransaction,
+ * sendTransaction, getGenesisHash). `request` returns the JSON-RPC `result`
+ * and throws on a JSON-RPC `error`. Injected so tests use a fake; see
+ * `solanaJsonRpc(url)` for the fetch-backed implementation.
+ */
+export interface SolanaRpc {
+  request(method: string, params: readonly unknown[]): Promise<unknown>;
+}
+
+/** Returns the Solana RPC for a cluster. Optional on the kit; additive in Phase 2 wave 2. */
+export type SolanaRpcProvider = (chain: SolanaCluster) => SolanaRpc;
+
+/** A Solana transaction after signing: the signed wire bytes (base64) and its base58 signature. */
+export type SignedSolanaTx = { transaction_base64: string; signature: string };
 
 /** EIP-712 typed data as handed to a signer. */
 export type TypedDataInput = {
@@ -48,10 +67,18 @@ export type NativeSignerPolicy = {
  * refusals; the signer (and its native policy, when present) is what enforces.
  */
 export interface Signer {
-  kind: "viem-local" | "ows" | "cdp" | "human-approve";
+  kind: "viem-local" | "ows" | "cdp" | "human-approve" | "solana-local";
   address(chain: OdaChain): Promise<`0x${string}`>;
   sendTransaction(tx: UnsignedEvmTx): Promise<{ tx_hash: `0x${string}` }>;
   signTypedData(td: TypedDataInput): Promise<`0x${string}`>;
+  /**
+   * OPTIONAL (Phase 2 wave 2). Signs a serialized unsigned Solana transaction
+   * and returns it signed, without sending it. A signer without this (and
+   * without sendSolanaTransaction) cannot execute a solana_tx intent.
+   */
+  signSolanaTransaction?(tx: UnsignedSolanaTx): Promise<SignedSolanaTx>;
+  /** OPTIONAL (Phase 2 wave 2). Signs and sends a Solana transaction; returns its base58 signature. */
+  sendSolanaTransaction?(tx: UnsignedSolanaTx): Promise<{ signature: string }>;
   nativePolicy?: NativeSignerPolicy;
 }
 
@@ -124,6 +151,8 @@ export type ActionContext = {
   fetch: KitFetch;
   clock: Clock;
   rpc: RpcProvider;
+  /** OPTIONAL (Phase 2 wave 2): Solana JSON-RPC, used to simulate and send solana_tx payloads. */
+  solanaRpc?: SolanaRpcProvider;
   signer?: Signer;
   policy: SatoPolicy;
   userAgent: string;
@@ -137,7 +166,7 @@ export type ReadAction<I = unknown, O = unknown> = {
 
 export type PrepareBuild = {
   params: unknown;
-  unsigned: UnsignedEvmTx | UnsignedX402Payment;
+  unsigned: UnsignedPayload;
   facts: Omit<PreflightFacts, "simulation" | "ttl_s">;
   summary: string;
   fee_disclosure: FeeDisclosure | null;
@@ -156,6 +185,8 @@ export type CreateKitOptions = {
   secret: Uint8Array;
   signer?: Signer;
   rpc: RpcProvider;
+  /** OPTIONAL (Phase 2 wave 2): Solana JSON-RPC for solana_tx simulation and sending. */
+  solanaRpc?: SolanaRpcProvider;
   fetch?: KitFetch;
   clock?: Clock;
   actions?: readonly AnyAction[];

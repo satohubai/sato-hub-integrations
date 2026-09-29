@@ -22,6 +22,8 @@ import type {
   Refusal,
   SimulationResult,
   UnsignedEvmTx,
+  UnsignedSolanaTx,
+  UnsignedTypedData,
 } from "./spec/index.js";
 import type {
   ActionContext,
@@ -34,7 +36,10 @@ import type {
   PrepareAction,
   ReadAction,
   ReceiptLog,
+  Signer,
 } from "./types.js";
+import { sendSignedSolanaTx, simulateSolanaTx } from "./solana/index.js";
+import { proposeToSafeTxService } from "./safe/index.js";
 import { evaluatePreflight } from "./policy/preflight.js";
 import { simulateTx } from "./actions/tx_simulate.js";
 import { ActionRefusedError } from "./actions/_util.js";
@@ -45,6 +50,16 @@ import { KIT_USER_AGENT } from "./version.js";
 
 /** simulateTx(unsigned, ctx) as exported by actions/tx_simulate.ts. */
 export type SimulateTx = (unsigned: UnsignedEvmTx, ctx: ActionContext) => Promise<SimulationResult>;
+
+/** simulateSolanaTx(unsigned, ctx) as exported by solana/index.ts. Injectable like SimulateTx. */
+export type SimulateSolanaTx = (unsigned: UnsignedSolanaTx, ctx: ActionContext) => Promise<SimulationResult>;
+
+/**
+ * Why a typed_data intent carries no simulation. Stated in the intent's
+ * summary instead of a faked simulation result.
+ */
+export const TYPED_DATA_NO_SIMULATION_REASON =
+  "Not simulated: signing typed data has no on-chain effect until the Safe's owners execute the transaction.";
 
 /**
  * CreateKitOptions plus the names the build scope uses. `secret` is optional
@@ -58,6 +73,8 @@ export type KitOptions = Omit<CreateKitOptions, "secret"> & {
   intentStore?: IntentStore;
   receiptLog?: ReceiptLog;
   simulate?: SimulateTx;
+  /** Injection seam for solana_tx simulation (default: simulateTransaction on `solanaRpc`). */
+  simulateSolana?: SimulateSolanaTx;
   evaluate?: EvaluatePreflight;
 };
 
@@ -95,6 +112,7 @@ export function createKit(opts: KitOptions): Kit {
     fetch: opts.fetch ?? ((...args: Parameters<typeof fetch>) => globalThis.fetch(...args)),
     clock,
     rpc: opts.rpc,
+    solanaRpc: opts.solanaRpc,
     signer: opts.signer,
     policy,
     userAgent: opts.userAgent ?? KIT_USER_AGENT,
@@ -110,12 +128,19 @@ export function createKit(opts: KitOptions): Kit {
   }
 
   function chainOf(r: IntentRecord): string {
-    return r.unsigned.kind === "evm_tx" ? r.unsigned.chain : r.unsigned.network;
+    return r.unsigned.kind === "x402_payment" ? r.unsigned.network : r.unsigned.chain;
   }
 
-  function writeReceipt(r: IntentRecord, status: ReceiptStatus, tx_hash: string | null, approval: "human" | "policy" | "none"): Promise<Receipt> {
+  function writeReceipt(
+    r: IntentRecord,
+    status: ReceiptStatus,
+    tx_hash: string | null,
+    approval: "human" | "policy" | "none",
+    extra: { safe_tx_hash?: string; signature?: string } = {},
+  ): Promise<Receipt> {
     const i = r.intent;
     return receipts.append({
+      ...extra,
       intent_id: i.intent_id,
       action: i.action,
       chain: chainOf(r),
@@ -154,6 +179,27 @@ export function createKit(opts: KitOptions): Kit {
     return refusals.map((x) => `${x.rule} (limit ${x.limit}, observed ${x.observed})`).join("; ");
   }
 
+  /** signTypedData, then the Safe Transaction Service POST when `submit` is set. Returns the safeTxHash, or null. */
+  async function executeTypedData(u: UnsignedTypedData, signer: Signer): Promise<string | null> {
+    const addr = await signer.address(u.chain as never);
+    if (addr.toLowerCase() !== u.signer.toLowerCase()) {
+      throw new Error(`typed_data names signer ${u.signer}, but the configured signer is ${addr}`);
+    }
+    const signature = await signer.signTypedData({ domain: u.domain, types: u.types, primaryType: u.primaryType, message: u.message });
+    if (!u.submit) return null;
+    return proposeToSafeTxService(u, signature, { fetch: ctx.fetch, userAgent: ctx.userAgent });
+  }
+
+  /** sendSolanaTransaction when the signer has it; otherwise signSolanaTransaction + the kit's solanaRpc. */
+  async function executeSolana(u: UnsignedSolanaTx, signer: Signer): Promise<string> {
+    if (signer.sendSolanaTransaction) return (await signer.sendSolanaTransaction(u)).signature;
+    if (signer.signSolanaTransaction && ctx.solanaRpc) {
+      const signed = await signer.signSolanaTransaction(u);
+      return sendSignedSolanaTx(ctx.solanaRpc(u.chain), signed);
+    }
+    throw new Error(`signer "${signer.kind}" lacks the optional sendSolanaTransaction capability`);
+  }
+
   return {
     receipts,
 
@@ -183,7 +229,16 @@ export function createKit(opts: KitOptions): Kit {
       // Simulate FIRST, then the pre-flight sees the result.
       let simulation: SimulationResult | null = null;
       let simError: string | null = null;
-      if (built.unsigned.kind === "evm_tx") {
+      const kind = built.unsigned.kind;
+      // evm_tx and solana_tx move funds when sent, so both must simulate and succeed.
+      const mustSimulate = kind === "evm_tx" || kind === "solana_tx";
+      if (built.unsigned.kind === "solana_tx") {
+        try {
+          simulation = await (opts.simulateSolana ?? simulateSolanaTx)(built.unsigned, ctx);
+        } catch (e) {
+          simError = e instanceof Error ? e.message : String(e);
+        }
+      } else if (built.unsigned.kind === "evm_tx") {
         const simulate: SimulateTx | undefined = opts.simulate ?? simulateTx;
         if (simulate) {
           try {
@@ -201,12 +256,13 @@ export function createKit(opts: KitOptions): Kit {
       const verdict = evaluate(policy, { ...built.facts, usd_spent_today, simulation, ttl_s });
       // simulation_required applies to EVM transactions; an x402 payment is a signed
       // authorization with no transaction to simulate, so those rules do not apply.
-      const refusals = built.unsigned.kind === "evm_tx"
+      // typed_data likewise has no on-chain effect until the Safe's owners execute.
+      const refusals = mustSimulate
         ? [...verdict.refusals]
         : verdict.refusals.filter((x) => !EVM_ONLY_RULES.has(x.rule));
-      // require_simulation is constant: an EVM tx never leaves prepare unsimulated,
-      // whatever the evaluator returned.
-      if (built.unsigned.kind === "evm_tx") {
+      // require_simulation is constant: an EVM or Solana tx never leaves prepare
+      // unsimulated, whatever the evaluator returned.
+      if (mustSimulate) {
         if (!simulation && !refusals.some((r) => r.rule === "simulation_required")) {
           refusals.push(refusal("simulation_required", "simulated", "not simulated", `The transaction was not simulated${simError ? `: ${simError}` : ""}.`));
         } else if (simulation && !simulation.ok && !refusals.some((r) => r.rule === "simulation_failed")) {
@@ -228,7 +284,9 @@ export function createKit(opts: KitOptions): Kit {
         intent_id,
         action: id,
         expires_at,
-        summary: built.summary,
+        summary: kind === "typed_data" && !built.summary.includes(TYPED_DATA_NO_SIMULATION_REASON)
+          ? `${built.summary} ${TYPED_DATA_NO_SIMULATION_REASON}`
+          : built.summary,
         policy: { ok, refusals },
         simulation,
         fee_disclosure: built.fee_disclosure,
@@ -268,18 +326,41 @@ export function createKit(opts: KitOptions): Kit {
           refusals: [...record.intent.policy.refusals],
         });
       }
-      if (!opts.signer) throw new Error("no signer configured; execute needs a signer");
-      if (record.unsigned.kind !== "evm_tx") {
-        throw new Error(`intent ${id} is an ${record.unsigned.kind}; execute sends EVM transactions only`);
+      const signer = opts.signer;
+      if (!signer) throw new Error("no signer configured; execute needs a signer");
+      const ukind = record.unsigned.kind;
+      if (ukind === "x402_payment") {
+        throw new Error(`intent ${id} is an ${ukind}; execute does not send x402 payments (EVM transactions only, plus typed data and Solana transactions)`);
+      }
+      // Capability check BEFORE consuming, so a signer that cannot sign this kind leaves the intent executable.
+      if (ukind === "solana_tx" && !signer.sendSolanaTransaction && !(signer.signSolanaTransaction && ctx.solanaRpc)) {
+        throw new Error(
+          `intent ${id} is a solana_tx; signer "${signer.kind}" lacks the optional sendSolanaTransaction capability ` +
+            "(or signSolanaTransaction together with a solanaRpc on the kit)",
+        );
       }
 
       const once = await store.consume(id);
       if (!once) throw new Error(`intent ${id} already executed`);
 
-      const approval = opts.signer.kind === "human-approve" ? "human" : "policy";
+      const approval = signer.kind === "human-approve" ? "human" : "policy";
+      const u = once.unsigned;
+      try {
+        if (u.kind === "typed_data") {
+          const safe_tx_hash = await executeTypedData(u, signer);
+          return writeReceipt(once, "executed", null, approval, safe_tx_hash ? { safe_tx_hash } : {});
+        }
+        if (u.kind === "solana_tx") {
+          const signature = await executeSolana(u, signer);
+          return writeReceipt(once, "executed", null, approval, { signature });
+        }
+      } catch (e) {
+        await writeReceipt(once, "failed", null, approval);
+        throw e;
+      }
       let tx_hash: string;
       try {
-        ({ tx_hash } = await opts.signer.sendTransaction(once.unsigned as UnsignedEvmTx));
+        ({ tx_hash } = await signer.sendTransaction(u as UnsignedEvmTx));
       } catch (e) {
         await writeReceipt(once, "failed", null, approval);
         throw e;

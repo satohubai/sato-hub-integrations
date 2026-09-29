@@ -164,7 +164,59 @@ export type UnsignedX402Payment = {
   amount: string;
 };
 
-export type UnsignedPayload = UnsignedEvmTx | UnsignedX402Payment;
+/**
+ * Where a signed typed-data message goes after signing. Only the Safe
+ * Transaction Service is defined: the signature is a Safe owner's proposal or
+ * confirmation, and nothing moves until the Safe's owners execute it.
+ * (Additive in Phase 2 wave 2.)
+ */
+export type TypedDataSubmit = { kind: "safe_tx_service"; url: string; safe_address: string };
+
+/**
+ * EIP-712 typed data to sign (additive in Phase 2 wave 2). `simulation_required`
+ * does NOT apply: signing has no on-chain effect until the Safe's owners
+ * execute the transaction, so a prepared intent states that reason instead of
+ * reporting a simulation (the same pattern as x402_payment), never a faked one.
+ * execute = signer.signTypedData, then a POST to the Safe Transaction Service
+ * when `submit` is set.
+ */
+export type UnsignedTypedData = {
+  kind: "typed_data";
+  chain: string;
+  chain_id: number;
+  /** The address expected to sign (a Safe owner for safe_tx_service). */
+  signer: string;
+  domain: Record<string, unknown>;
+  types: Record<string, Array<{ name: string; type: string }>>;
+  primaryType: string;
+  message: Record<string, unknown>;
+  /** null: return the signature only; otherwise submit it where this says. */
+  submit: TypedDataSubmit | null;
+};
+
+/**
+ * A serialized UNSIGNED Solana transaction (additive in Phase 2 wave 2).
+ * Simulated with the RPC's simulateTransaction (sigVerify false) and must
+ * succeed, like evm_tx. Executing it needs the signer's OPTIONAL
+ * signSolanaTransaction / sendSolanaTransaction capability; a signer without
+ * it fails with an error naming the capability.
+ */
+export type UnsignedSolanaTx = {
+  kind: "solana_tx";
+  chain: "solana" | "solana-devnet";
+  /** base58 public key paying the fee. */
+  fee_payer: string;
+  /** base64 of the serialized unsigned transaction. */
+  transaction_base64: string;
+  recent_blockhash: string;
+  /** Last block height at which recent_blockhash is still valid (an integer). */
+  last_valid_block_height: number;
+};
+
+export type UnsignedPayload = UnsignedEvmTx | UnsignedX402Payment | UnsignedTypedData | UnsignedSolanaTx;
+
+export const UNSIGNED_PAYLOAD_KINDS = ["evm_tx", "x402_payment", "typed_data", "solana_tx"] as const;
+export type UnsignedPayloadKind = (typeof UNSIGNED_PAYLOAD_KINDS)[number];
 
 export type PreparedIntent = {
   intent_id: string;
@@ -210,10 +262,19 @@ export type Receipt = {
   policy: { ok: boolean; refusals: Refusal[] };
   simulation: SimulationResult | null;
   fee_disclosure: FeeDisclosure | null;
+  /** The EVM transaction hash (evm_tx). Never reused for a Safe proposal or a Solana signature. */
   tx_hash: string | null;
   status: ReceiptStatus;
   created_at: string;
   mandate: IntentMandate;
+  /**
+   * OPTIONAL (additive in Phase 2 wave 2). typed_data submitted to the Safe
+   * Transaction Service: the 0x-prefixed 32-byte safeTxHash of the proposal.
+   * It is not an on-chain transaction, so tx_hash stays null alongside it.
+   */
+  safe_tx_hash?: string;
+  /** OPTIONAL (additive in Phase 2 wave 2). solana_tx: the base58 transaction signature. */
+  signature?: string;
 };
 
 /** The exact string whose sha256 is the receipt's `hash`: the receipt minus `hash`. */
