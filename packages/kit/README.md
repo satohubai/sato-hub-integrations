@@ -30,17 +30,32 @@ The file intent store and the intent HMAC secret live under `.sato/` by default
 
 License: MIT
 
+## `sato-kit doctor`: template drift
+
+In a repo made by create-sato-agent (one with `sato.create.json`), `doctor`
+also sends `sato.create.json` and `sato.lock.json` to
+`https://satohub.ai/api/create/drift` (3 s timeout) and prints the changes it
+returns: a newer template version that passed its checks, a custody change in
+a stored Sato Check profile for a pinned package, or a pinned package version
+that fails the template checks upstream. It is read-only and opens no issues
+(the generated `sato-drift.yml` workflow does that). With `--json` the answer
+is under `result.drift`, with `state` `checked`, `unavailable` (with a
+`reason`) or `not_applicable`; nothing is filled in when the check does not
+answer.
+
 ## Host adapters: envelope and error codes
 
 `@satohub/kit/ai-sdk` (`satoKitTools(kit, opts)`), `@satohub/kit/agentkit`
 (`satoKitActionProvider(kit, opts)`), `@satohub/kit/claude-agent-sdk`
 (`createSatoKitSdkServer(kit, opts)` + `requireApprovalHook()`),
 `@satohub/kit/openai-agents` (`satoKitOpenAITools(kit, opts)`, OpenAI Agents
-SDK function tools with `needsApproval`) and `@satohub/kit/eliza`
+SDK function tools with `needsApproval`), `@satohub/kit/langchain`
+(`satoKitLangChainTools(kit, opts)`, LangChain JS `DynamicStructuredTool`s
+whose func returns the envelope as a JSON string) and `@satohub/kit/eliza`
 (`satoKitElizaPlugin(kit, opts)`) are built from the same tool surface as the
 local MCP server (`sato-kit mcp`). Options:
 `{ toolsets?, actions?, policy?, signerKind?, fetch?, statusTimeoutMs? }`
-(AgentKit and elizaOS also take `approve`; neither host has an approval step,
+(AgentKit, LangChain and elizaOS also take `approve`; none of these hosts has an approval step,
 so `execute` is refused without it).
 
 `@satohub/kit/eliza` is a thin compatibility adapter for existing elizaOS 1.x

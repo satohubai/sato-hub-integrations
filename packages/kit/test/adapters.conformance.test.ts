@@ -1,11 +1,13 @@
 // The conformance table (test/conformance) run through the five host
-// subpaths and the kit's local MCP server (six doors).
+// subpaths and the kit's local MCP server (seven doors).
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { satoKitTools } from "../src/adapters/ai-sdk.js";
 import { satoKitActionProvider } from "../src/adapters/agentkit.js";
 import { satoKitOpenAITools } from "../src/adapters/openai-agents.js";
 import { satoKitElizaPlugin } from "../src/adapters/eliza.js";
+import { satoKitLangChainTools } from "../src/adapters/langchain.js";
+import { ToolInputParsingException } from "@langchain/core/tools";
 import { RunContext } from "@openai/agents";
 import { createKitMcpServer } from "../src/mcp/index.js";
 import { CORE_ACTIONS } from "../src/index.js";
@@ -152,6 +154,37 @@ export const elizaRunner: ConformanceRunner = {
   },
 };
 
+export const langChainRunner: ConformanceRunner = {
+  name: "langchain",
+  async create(kit, policy) {
+    const approved = satoKitLangChainTools(kit, { policy, approve: async () => true });
+    const bare = satoKitLangChainTools(kit, { policy });
+    const invoke = async (list: typeof approved, name: string, args: unknown): Promise<ToolEnvelope> => {
+      const t = list.find((x) => x.name === name);
+      if (!t) return { ok: false, tool: name, error: { code: "unknown_tool", message: name } };
+      try {
+        // What a LangChain agent does with a model's tool call: invoke with the parsed arguments.
+        return JSON.parse(String(await t.invoke(args as any)));
+      } catch (e) {
+        // LangChain's own JSON Schema validation rejected the input before func ran.
+        if (e instanceof ToolInputParsingException) return { ok: false, tool: name, error: { code: "invalid_input", message: (e as Error).message } };
+        throw e;
+      }
+    };
+    return {
+      async listTools() { return approved.map((t) => t.name); },
+      call: (name, args) => invoke(approved, name, args),
+      async approvalRequired(name, args) {
+        let asked = false;
+        const probe = satoKitLangChainTools(kit, { policy, approve: async () => { asked = true; return false; } });
+        const env = await invoke(probe, name, args);
+        return asked && !env.ok && env.error.code === "approval_denied";
+      },
+      callUnapproved: (name, args) => invoke(bare, name, args),
+    };
+  },
+};
+
 // The MCP server speaks MCP results, not the adapter envelope, so this runner
 // maps them: a prepare the pre-flight refused is a normal MCP result carrying
 // policy.refusals (the host sees rule/limit/observed in structuredContent) and
@@ -200,3 +233,4 @@ runConformance(agentKitRunner);
 runConformance(claudeAgentSdkRunner);
 runConformance(openAIAgentsRunner);
 runConformance(elizaRunner);
+runConformance(langChainRunner);
