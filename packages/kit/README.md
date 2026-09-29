@@ -75,3 +75,7 @@ and nothing else, and every host asks a person before it runs.
 On the MCP server a refused prepare is a normal result whose
 `structuredContent.policy.refusals` names each rule; a failed call sets
 `isError` and carries its detail in `_meta["ai.satohub/error"]`.
+
+## Sato OS hand-off (`@satohub/kit/sato-os`)
+
+In live mode an agent can send prepared intents to a self-hosted Sato OS for a person's approval and signing there, instead of signing locally. `attachToSatoOs({ baseUrl, name, goal, walletAddresses, chains })` attaches the agent and stores its scoped token in `.sato/sato-os.json` (mode 0600, gitignored; never returned or printed). `proposeIntent(prepared, { baseUrl, token })` files the intent (unsigned payload, summary, policy verdict, simulation, fee disclosure) through Sato OS's `sato_os_create_action_proposal` tool and returns `{ proposal_id, status }`. A refused or expired intent is never sent. Nothing in this path signs or broadcasts.
