@@ -98,8 +98,10 @@ const RECEIPT_KEYS = [
 ] as const;
 
 /** Optional receipt fields, additive in Phase 2 wave 2. Absent is always valid. */
-export const RECEIPT_OPTIONAL_KEYS = ["safe_tx_hash", "signature"] as const;
+export const RECEIPT_OPTIONAL_KEYS = ["safe_tx_hash", "signature", "typed_data_signature"] as const;
 export const SAFE_TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/;
+/** An EVM signature: 64-byte compact (EIP-2098) or 65-byte r||s||v. */
+export const TYPED_DATA_SIGNATURE_RE = /^0x(?:[0-9a-fA-F]{128}|[0-9a-fA-F]{130})$/;
 /** 64 bytes in base58: 86–88 characters. */
 export const SOLANA_SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{86,88}$/;
 /** A 32-byte public key or blockhash in base58: 32–44 characters. */
@@ -190,6 +192,7 @@ export function validateReceipt(input: unknown): Validation<Receipt> {
   onlyKeys(input, [...RECEIPT_KEYS, ...RECEIPT_OPTIONAL_KEYS], "receipt", e);
   need(input, RECEIPT_KEYS, "receipt", e);
   if ("safe_tx_hash" in input && (typeof input.safe_tx_hash !== "string" || !SAFE_TX_HASH_RE.test(input.safe_tx_hash))) e.push("safe_tx_hash must be 0x + 64 hex");
+  if ("typed_data_signature" in input && (typeof input.typed_data_signature !== "string" || !TYPED_DATA_SIGNATURE_RE.test(input.typed_data_signature))) e.push("typed_data_signature must be 0x + 128 or 130 hex");
   if ("signature" in input && (typeof input.signature !== "string" || !SOLANA_SIGNATURE_RE.test(input.signature))) e.push("signature must be a base58 Solana signature");
   if (input.schema !== RECEIPT_SCHEMA_ID) e.push(`schema must be ${JSON.stringify(RECEIPT_SCHEMA_ID)}`);
   if (typeof input.seq !== "number" || !Number.isInteger(input.seq) || input.seq < 0) e.push("seq must be a non-negative integer");

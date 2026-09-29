@@ -22,5 +22,6 @@ export type { LoadKitOptions, LoadedKit } from "./config/index.js";
 export { solanaJsonRpc, simulateSolanaTx, sendSignedSolanaTx, SolanaRpcError, SOLANA_MAINNET_GENESIS_HASH } from "./solana/index.js";
 export { associatedTokenAddress, findProgramAddress, readTransaction, base58Encode, base58Decode } from "./solana/codec.js";
 export { proposeToSafeTxService, safeProposalUrl, typedDataHash } from "./safe/index.js";
+export { resolveSafeTxService, safeApiKeyFor, SAFE_API_KEY_ENV } from "./safe/service.js";
 export { TYPED_DATA_NO_SIMULATION_REASON } from "./kit.js";
 export type { SimulateSolanaTx } from "./kit.js";
