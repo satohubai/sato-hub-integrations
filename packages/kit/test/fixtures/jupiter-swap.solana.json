@@ -1,0 +1,25 @@
+{
+  "_source": "POST https://lite-api.jup.ag/swap/v1/swap userPublicKey 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM feeAccount HnyyFHhp3LQ6VfRn1AhPHSwboYYQa1HT7REaMfzsA8gx",
+  "_note": "Recorded 2026-09-28; HTTP body. The transaction is UNSIGNED; no key was involved.",
+  "body": {
+    "swapTransaction": "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAGCn6MCIdgv94d3c8ywX8gm4JC7lKq8TH6zYjQ6ixtCwbybQ/ffN89KMzS1moKr3xD+eaLjFLD93Uu7/6fCChoRW/T6oz1rKyozQUgdRIXXEPO9Upd2Z7eIKFrVSU3OPOX3PmCiwvCJgzpH2fJ8JBXwknfQIozMia+xWijdPZ+b1CxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADBkZv5SEXMv/srbpyw5vnvIzlu8X3EmssQ5s6QAAAAAR51VvyMcBu7nTFbs5oFQf9sbLeo/SOUQKxzaJWvBOPBt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKm0P/on9df2SnTAmx8pWHneSwmrNt/J3VFLMhqns4zl6N7Q9Ay9C7GaZoeIC6tjzXdN7daoQfkWBCPyF0C0JYMUxEJ3+kzBTp5zAX7oEq8puiMYiGDxD8qTZpmEivy7MZYGBQAFAsBcFQAFAAkDBBcBAAAAAAAEAgABDAIAAAAA4fUFAAAAAAcBAQERBhkHAAECBhADCAYPAAoMCw0QAQIHBAAJCREOJOUXy5d6460qAQAAALUBZAABAOH1BQAAAABzVrMAAAAAADIADwcDAQAAAQkBE/Z4dKAt8Nhz1EWxneAcVZcjSDUigLvQOesCYHzCV/YD1deZBRPQ1qmY",
+    "lastValidBlockHeight": 429567844,
+    "prioritizationFeeLamports": 99999,
+    "computeUnitLimit": 1400000,
+    "loadedAccountsDataSize": null,
+    "loadedAccountsDataSizeLimit": null,
+    "transactionVersion": 0,
+    "prioritizationType": {
+      "computeBudget": {
+        "microLamports": 71428,
+        "estimatedMicroLamports": 600832
+      }
+    },
+    "simulationSlot": null,
+    "dynamicSlippageReport": null,
+    "simulationError": null,
+    "addressesByLookupTableAddress": null,
+    "timeTaken": 0.052831571,
+    "createAtaTimeTaken": 0.027023697
+  }
+}

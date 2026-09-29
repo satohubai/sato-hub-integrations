@@ -1,0 +1,38 @@
+{
+  "_source": "GET https://lite-api.jup.ag/swap/v1/quote SOL->USDC amount 100000000 slippageBps 50 (no platformFeeBps)",
+  "_note": "Recorded 2026-09-28; HTTP body.",
+  "body": {
+    "inputMint": "So11111111111111111111111111111111111111112",
+    "inAmount": "100000000",
+    "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outAmount": "11781059",
+    "otherAmountThreshold": "11722154",
+    "swapMode": "ExactIn",
+    "slippageBps": 50,
+    "platformFee": null,
+    "priceImpactPct": "0",
+    "routePlan": [
+      {
+        "swapInfo": {
+          "ammKey": "7yD7gfXv49SFxhx9uTc11dEd7Nj98rGWeYMdZJgheZbG",
+          "label": "Kipseli",
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "inAmount": "100000000",
+          "outAmount": "11781059",
+          "updateContextSlot": "451528092"
+        },
+        "percent": 100,
+        "bps": null
+      }
+    ],
+    "contextSlot": 451528092,
+    "timeTaken": 0.001815666,
+    "swapUsdValue": "11.778253511409050",
+    "useIncurredSlippageForQuoting": null,
+    "useRewards": null,
+    "loadedLongtailToken": false,
+    "instructionVersion": null,
+    "transactionVersion": 0
+  }
+}
