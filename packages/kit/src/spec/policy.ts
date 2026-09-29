@@ -100,7 +100,41 @@ export type SatoPolicy = {
   unknown_verdict: "refuse" | "allow";
   require_simulation: true;
   human_approval: boolean;
+  /**
+   * The Sato Scan recipient-guard settings (policy.v1.json `scan`). Present
+   * ONLY when the file carried a `scan` object, with every missing field
+   * filled from SCAN_POLICY_DEFAULTS; absent otherwise, so a policy without
+   * one parses to exactly what it always did. NOT part of policyDigest (that
+   * covers the fields above); a file's own sha256 covers it.
+   */
+  scan?: ScanPolicy;
 };
+
+/** Enums of the `scan` block. Additive to sato.policy/v1; closed keys. */
+export const SCAN_LOOKALIKE_MODES = ["refuse", "caution", "off"] as const;
+export const SCAN_TOKEN_MODES = ["refuse_not_canonical", "off"] as const;
+export const SCAN_PAYTO_MODES = ["caution", "refuse", "off"] as const;
+export const SCAN_TREASURY_MODES = ["allowlist_only", "off"] as const;
+
+export type ScanPolicy = {
+  lookalike: (typeof SCAN_LOOKALIKE_MODES)[number];
+  token: (typeof SCAN_TOKEN_MODES)[number];
+  /** Recorded in the file; enforced only by hosts that implement it. The offline guard in satohub-core and the kit do not enforce it today. */
+  payto_changed: (typeof SCAN_PAYTO_MODES)[number];
+  treasury_recipients: (typeof SCAN_TREASURY_MODES)[number];
+  /** Recorded in the file; the caller decides whether to make the hosted call. */
+  hosted_check: boolean;
+};
+
+export const SCAN_POLICY_DEFAULTS: Readonly<ScanPolicy> = {
+  lookalike: "refuse",
+  token: "refuse_not_canonical",
+  payto_changed: "caution",
+  treasury_recipients: "allowlist_only",
+  hosted_check: false,
+};
+
+export const SCAN_POLICY_KEYS = ["lookalike", "token", "payto_changed", "treasury_recipients", "hosted_check"] as const;
 
 export const INTENT_TTL_DEFAULT_S = 300;
 export const INTENT_TTL_MAX_S = 3600;
@@ -146,6 +180,7 @@ export const POLICY_KEYS = [
   "unknown_verdict",
   "require_simulation",
   "human_approval",
+  "scan",
 ] as const;
 
 export type PolicyParse = { ok: true; policy: SatoPolicy } | { ok: false; error: string };
@@ -168,6 +203,31 @@ function usd(v: unknown, field: string): number | null | string {
   if (v === undefined || v === null) return null;
   if (typeof v !== "number" || !Number.isFinite(v) || v <= 0) return `${field} must be a positive number or null`;
   return v;
+}
+
+function parseScan(v: unknown): ScanPolicy | string {
+  if (!isObj(v)) return "scan must be an object";
+  for (const k of Object.keys(v)) {
+    if (!(SCAN_POLICY_KEYS as readonly string[]).includes(k)) return `unknown scan property ${JSON.stringify(k)}`;
+  }
+  const out: ScanPolicy = { ...SCAN_POLICY_DEFAULTS };
+  const modes: [Exclude<keyof ScanPolicy, "hosted_check">, readonly string[]][] = [
+    ["lookalike", SCAN_LOOKALIKE_MODES],
+    ["token", SCAN_TOKEN_MODES],
+    ["payto_changed", SCAN_PAYTO_MODES],
+    ["treasury_recipients", SCAN_TREASURY_MODES],
+  ];
+  for (const [field, allowed] of modes) {
+    const x = v[field];
+    if (x === undefined) continue;
+    if (typeof x !== "string" || !allowed.includes(x)) return `scan.${field} must be one of ${allowed.join(", ")}`;
+    (out as Record<string, unknown>)[field] = x;
+  }
+  if (v.hosted_check !== undefined) {
+    if (typeof v.hosted_check !== "boolean") return "scan.hosted_check must be a boolean";
+    out.hosted_check = v.hosted_check;
+  }
+  return out;
 }
 
 /** Parse a policy.json value. Fills every default; refuses unknown keys. */
@@ -236,6 +296,13 @@ export function parsePolicyFile(input: unknown): PolicyParse {
     return { ok: false, error: "human_approval must be a boolean" };
   }
 
+  let scan: ScanPolicy | undefined;
+  if (input.scan !== undefined) {
+    const sc = parseScan(input.scan);
+    if (typeof sc === "string") return { ok: false, error: sc };
+    scan = sc;
+  }
+
   return {
     ok: true,
     policy: {
@@ -255,6 +322,7 @@ export function parsePolicyFile(input: unknown): PolicyParse {
       unknown_verdict: uv,
       require_simulation: true,
       human_approval: input.human_approval === true,
+      ...(scan ? { scan } : {}),
     },
   };
 }
