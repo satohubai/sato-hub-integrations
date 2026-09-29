@@ -22,6 +22,13 @@ First public version. Everything below is new.
 - **Doors.** `sato-kit` CLI (`read`, `prepare`, `execute`, `mcp`, `doctor`); local stdio MCP server
   (`ai.satohub/kit`, default profile of eight tools, `--toolsets all` for the rest); adapters for
   the AI SDK, AgentKit (both directions, incl. `fromAgentKitProvider`), Claude Agent SDK, OpenAI
-  Agents, LangChain and elizaOS; Sato OS hand-off (`attachToSatoOs`, `proposeIntent`).
+  Agents, LangChain and elizaOS; GOAT plugin consumption (`@satohub/kit/goat`); Sato OS hand-off
+  (`attachToSatoOs`, `proposeIntent`).
+- **Receipts.** `safe_tx_hash` for submitted Safe proposals, `typed_data_signature` when a Safe
+  proposal is signed but not submitted, `signature` for Solana transactions.
+- **Safe gateway.** Optional API key for Safe's hosted gateway, sent only to its own origin or one
+  you configure; never logged.
 - **Known limits.** The pre-flight explains; the signer enforces. `execute` does not send x402
   payments. AgentKit's own analytics call still happens for consumed AgentKit actions.
+  `solanaLocalSigner` needs `@solana/kit` 8+ installed separately. Stripe MPP is not included
+  (see docs/mpp-research.md).
