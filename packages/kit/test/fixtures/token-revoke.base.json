@@ -1,0 +1,20 @@
+{
+  "note": "Recorded keyless from https://mainnet.base.org by eth_call at a pinned block; replay on a fork (anvil --fork-url <rpc> --fork-block-number <block>) to re-simulate.",
+  "chain": "base",
+  "chain_id": 8453,
+  "block": "51931175",
+  "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "kind": "erc20",
+  "owner": "0x1111111111111111111111111111111111111111",
+  "spender": "0x2222222222222222222222222222222222222222",
+  "allowance": "0",
+  "tx": {
+    "to": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "data": "0x095ea7b300000000000000000000000022222222222222222222222222222222222222220000000000000000000000000000000000000000000000000000000000000000",
+    "value": "0"
+  },
+  "eth_call": {
+    "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+  },
+  "estimate_gas": "35862"
+}
