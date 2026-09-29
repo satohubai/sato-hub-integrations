@@ -14,6 +14,7 @@
 // Only operation 0 (CALL) is built: a DELEGATECALL runs foreign code as the
 // Safe itself, which no allowlist here can describe.
 import { getAddress } from "viem";
+import { SAFE_TX_SERVICE_BASE, serviceBaseFor, safeAuthHeaders, type ResolvedSafeTxService } from "./service.js";
 import { ACTION_SCHEMA_ID, odaIdToToolName } from "../spec/index.js";
 import type { ActionDescriptor, UnsignedEvmTx, UnsignedTypedData } from "../spec/index.js";
 import type { ActionContext, PrepareAction, PrepareBuild, ReadAction } from "../types.js";
@@ -44,9 +45,10 @@ const NATIVE: Record<SafeChain, string> = {
   ethereum: "ETH", sepolia: "ETH", base: "ETH", "base-sepolia": "ETH", arbitrum: "ETH", optimism: "ETH", polygon: "POL",
 };
 
-export const SAFE_TX_SERVICE_BASE = "https://api.safe.global/tx-service";
-export function safeTxServiceUrl(chain: SafeChain): string {
-  return `${SAFE_TX_SERVICE_BASE}/${SAFE_TX_SERVICE_SHORT_NAMES[chain]}`;
+export { SAFE_TX_SERVICE_BASE };
+/** The service URL for a chain: the kit's per-chain override when configured, else Safe's gateway. */
+export function safeTxServiceUrl(chain: SafeChain, s?: ResolvedSafeTxService): string {
+  return serviceBaseFor(SAFE_TX_SERVICE_SHORT_NAMES[chain], chain, s);
 }
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -122,9 +124,9 @@ export function safeInfoDescriptor(): ActionDescriptor {
 
 /** One GET to the service. Exported for safe.propose and tests. */
 export async function readSafe(ctx: ActionContext, chain: SafeChain, safe: `0x${string}`, action = INFO_ID): Promise<SafeInfo> {
-  const service = safeTxServiceUrl(chain);
+  const service = safeTxServiceUrl(chain, ctx.safeTxService);
   const url = `${service}/api/v1/safes/${getAddress(safe)}/`;
-  const r = await http(ctx, url);
+  const r = await http(ctx, url, { headers: safeAuthHeaders(ctx.safeTxService, url) });
   if (r.status === 404) throw new ActionInputError(`${action}: the Safe Transaction Service has no Safe at ${safe} on ${chain}`);
   if (r.status < 200 || r.status >= 300) throw new Error(`${action}: Safe Transaction Service answered HTTP ${r.status}${r.text ? `: ${r.text.slice(0, 200)}` : ""}`);
   const b = r.body as Record<string, unknown> | null;

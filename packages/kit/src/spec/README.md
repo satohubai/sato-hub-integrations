@@ -64,6 +64,8 @@ One JSON line per state change, `schema: "sato.receipt/v1"`: `seq` (from 0, no g
 
 Optional, additive in Phase 2 wave 2 (absent is always valid): `safe_tx_hash` — a typed_data proposal's safeTxHash at the Safe Transaction Service (not an on-chain transaction; `tx_hash` stays null) — and `signature` — a solana_tx's base58 transaction signature. `tx_hash` always means an EVM transaction hash.
 
+Optional, additive in Phase 2 wave 3: `typed_data_signature` — when a typed_data intent executes with `submit: null`, the EVM signature over the typed data (0x + 128 or 130 hex: EIP-2098 compact or r||s||v) is returned on the receipt instead of being lost. Nothing was sent, so `tx_hash` stays null. Receipts without it still validate.
+
 The `mandate` block (`kind: "intent"`, `intent_id`, `action`, `policy_digest`, `expires_at`, `approval`) is aligned with the AP2 v0.2 / Verifiable Intent vocabulary. It is not a certified implementation of either.
 
 ## 8. Canonical JSON
