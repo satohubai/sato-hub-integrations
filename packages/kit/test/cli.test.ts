@@ -25,11 +25,22 @@ const STATUS_DOC = {
   ],
 };
 
+const DRIFT_DOC = {
+  schema: "sato.template-drift/v1",
+  template: { id: "base-guarded-trader", framework: "plain-ts", pinned_version: "0.1.0", pinned_digest: "sha256:aaa", latest_version: "0.2.0", latest_digest: "sha256:bbb", latest_last_green: "2026-09-27" },
+  changes: [
+    { key: "template:base-guarded-trader/plain-ts@sha256:bbb", kind: "template_update", title: "base-guarded-trader/plain-ts 0.2.0 is available", body_markdown: "Update with the command shown.", evidence_urls: ["https://github.com/satohubai/sato-agent-templates/commit/bbb"] },
+    { key: "broken:viem@2.56.9", kind: "upstream_break", title: "viem 2.56.9 fails the template checks", body_markdown: "See the run.", evidence_urls: ["https://github.com/satohubai/sato-agent-templates/actions/runs/1"] },
+  ],
+};
+
 // The preload: a fetch stand-in keyed on URL. It is plain JS written at test time.
 const PRELOAD = `
 const x402 = ${JSON.stringify(X402_V1)};
 const status = ${JSON.stringify(STATUS_DOC)};
 const mode = process.env.CLI_TEST_STATUS ?? "ok";
+const drift = ${JSON.stringify(DRIFT_DOC)};
+const driftMode = process.env.CLI_TEST_DRIFT ?? "ok";
 function rpc(m) {
   switch (m.method) {
     case "eth_chainId": return "0x2105";
@@ -47,6 +58,14 @@ globalThis.fetch = async (input, init) => {
     return new Response(JSON.stringify(out), { status: 200, headers: { "content-type": "application/json" } });
   }
   if (url === "https://paid.fixture/data") return new Response(JSON.stringify(x402), { status: 402, headers: { "content-type": "application/json" } });
+  if (url === "https://satohub.ai/api/create/drift") {
+    if (process.env.CLI_TEST_DRIFT_LOG) (await import("node:fs")).writeFileSync(process.env.CLI_TEST_DRIFT_LOG, JSON.stringify({ method: init.method, headers: init.headers, body: JSON.parse(init.body), hasSignal: !!init.signal }));
+    if (driftMode === "down") throw new TypeError("fetch failed");
+    if (driftMode === "hang") return await new Promise((_, reject) => init.signal.addEventListener("abort", () => reject(init.signal.reason)));
+    if (driftMode === "http429") return new Response("slow down", { status: 429 });
+    if (driftMode === "badshape") return new Response(JSON.stringify({ schema: "sato.template-drift/v1", template: drift.template, changes: [{ key: "x", kind: "unsafe", title: "t", body_markdown: "", evidence_urls: [] }] }), { status: 200 });
+    return new Response(JSON.stringify(drift), { status: 200 });
+  }
   if (url.endsWith("/actions-status.json")) {
     if (mode === "down") throw new TypeError("fetch failed");
     const onStatusBranch = url.includes("/sato-agent-templates/status/");
@@ -210,6 +229,76 @@ test("doctor: an invalid policy.json is reported, not replaced by the default", 
   assert.equal(d.policy.valid, false);
   assert.match(d.policy.error, /not valid JSON/);
   assert.equal(d.network, null);
+});
+
+function generatedRepo(): string {
+  const cwd = mkdtempSync(join(TMP, "gen-"));
+  writeFileSync(join(cwd, "sato.create.json"), JSON.stringify({ template: "base-guarded-trader", framework: "plain-ts", version: "0.1.0" }));
+  writeFileSync(join(cwd, "sato.lock.json"), JSON.stringify({ packages: { viem: "2.56.9" } }));
+  return cwd;
+}
+
+test("doctor: no sato.create.json → drift not checked, and no request is made", () => {
+  const log = join(mkdtempSync(join(TMP, "log-")), "drift.json");
+  const d = json(run(["doctor", "--json"], { env: { CLI_TEST_DRIFT_LOG: log } }).stdout).result;
+  assert.equal(d.drift.state, "not_applicable");
+  assert.match(d.drift.reason, /no sato\.create\.json/);
+  assert.throws(() => readFileSync(log, "utf8"));
+});
+
+test("doctor: a generated repo → POSTs both files and prints the changes the endpoint returned", () => {
+  const cwd = generatedRepo();
+  const log = join(cwd, "..", "drift-log-" + Date.now() + ".json");
+  const r = run(["doctor", "--json"], { cwd, env: { CLI_TEST_DRIFT_LOG: log } });
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  const d = json(r.stdout).result.drift;
+  assert.equal(d.state, "checked");
+  assert.equal(d.url, "https://satohub.ai/api/create/drift");
+  assert.deepEqual(d.template, DRIFT_DOC.template);
+  assert.deepEqual(d.changes, DRIFT_DOC.changes);
+  const sent = JSON.parse(readFileSync(log, "utf8"));
+  assert.equal(sent.method, "POST");
+  assert.equal(sent.hasSignal, true);
+  assert.match(sent.headers["user-agent"], /^@satohub\/kit\//);
+  assert.deepEqual(sent.body, { create: { template: "base-guarded-trader", framework: "plain-ts", version: "0.1.0" }, lock: { packages: { viem: "2.56.9" } } });
+});
+
+test("doctor human output lists each drift change with its evidence", () => {
+  const r = run(["doctor"], { cwd: generatedRepo() });
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, /Template drift: base-guarded-trader\/plain-ts pinned 0\.1\.0, latest 0\.2\.0 \(last passed its checks 2026-09-27\) — 2 changes/);
+  assert.match(r.stdout, /\[template_update\] base-guarded-trader\/plain-ts 0\.2\.0 is available/);
+  assert.match(r.stdout, /\[upstream_break\] viem 2\.56\.9 fails the template checks/);
+  assert.match(r.stdout, /evidence: https:\/\/github\.com\/satohubai\/sato-agent-templates\/actions\/runs\/1/);
+  assert.doesNotMatch(r.stdout, /\b(safe|unsafe|secure|guaranteed|best)\b/i);
+});
+
+for (const [mode, re] of [["down", /could not be read/], ["http429", /HTTP 429/], ["badshape", /did not return a sato\.template-drift\/v1 document/]] as const) {
+  test(`doctor: drift ${mode} → unavailable with a reason, no changes invented`, () => {
+    const d = json(run(["doctor", "--json"], { cwd: generatedRepo(), env: { CLI_TEST_DRIFT: mode } }).stdout).result.drift;
+    assert.equal(d.state, "unavailable");
+    assert.match(d.reason, re);
+    assert.ok(!("changes" in d));
+  });
+}
+
+test("doctor: drift that does not answer is cut off at 3 s", () => {
+  const t0 = Date.now();
+  const r = run(["doctor", "--json"], { cwd: generatedRepo(), env: { CLI_TEST_DRIFT: "hang" } });
+  const d = json(r.stdout).result.drift;
+  assert.equal(d.state, "unavailable");
+  assert.match(d.reason, /did not answer within 3 s/);
+  assert.ok(Date.now() - t0 < 10_000);
+});
+
+test("doctor: sato.create.json without sato.lock.json → unavailable, no request", () => {
+  const cwd = mkdtempSync(join(TMP, "nolock-"));
+  writeFileSync(join(cwd, "sato.create.json"), "{}");
+  const log = join(cwd, "..", "nolock-log-" + Date.now() + ".json");
+  const d = json(run(["doctor", "--json"], { cwd, env: { CLI_TEST_DRIFT_LOG: log } }).stdout).result.drift;
+  assert.equal(d.state, "unavailable");
+  assert.match(d.reason, /sato\.lock\.json is missing/);
+  assert.throws(() => readFileSync(log, "utf8"));
 });
 
 test("mcp subcommand: answers initialize in under 10 s and exits 0 when stdin closes", () => {
