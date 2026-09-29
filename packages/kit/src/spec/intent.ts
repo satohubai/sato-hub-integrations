@@ -275,6 +275,13 @@ export type Receipt = {
   safe_tx_hash?: string;
   /** OPTIONAL (additive in Phase 2 wave 2). solana_tx: the base58 transaction signature. */
   signature?: string;
+  /**
+   * OPTIONAL (additive in Phase 2 wave 3). A typed_data intent executed with
+   * submit: null: the EVM signature over the typed data (0x + 128 or 130 hex,
+   * EIP-2098 compact or r||s||v), returned so it is not lost. No transaction
+   * was sent, so tx_hash stays null alongside it.
+   */
+  typed_data_signature?: string;
 };
 
 /** The exact string whose sha256 is the receipt's `hash`: the receipt minus `hash`. */
