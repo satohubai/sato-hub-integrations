@@ -16,7 +16,7 @@ test("default profile is exactly the eight tools, in order", () => {
 });
 
 test("all adds erc8004_lookup and tx_simulate after the default eight", () => {
-  assert.deepEqual(all.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate", "token_approvals_list", "token_approvals_revoke", "erc8004_register", "bridge_quote", "bridge_prepare", "solana_read", "solana_transfer", "solana_swap_quote", "solana_swap_prepare"]);
+  assert.deepEqual(all.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate", "token_approvals_list", "token_approvals_revoke", "erc8004_register", "bridge_quote", "bridge_prepare", "safe_info", "safe_propose", "solana_read", "solana_transfer", "solana_swap_quote", "solana_swap_prepare"]);
 });
 
 test("every tool passes the portable-schema lint (input and output) and the description lint", () => {

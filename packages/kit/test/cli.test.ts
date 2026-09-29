@@ -270,7 +270,8 @@ test("doctor human output lists each drift change with its evidence", () => {
   assert.match(r.stdout, /\[template_update\] base-guarded-trader\/plain-ts 0\.2\.0 is available/);
   assert.match(r.stdout, /\[upstream_break\] viem 2\.56\.9 fails the template checks/);
   assert.match(r.stdout, /evidence: https:\/\/github\.com\/satohubai\/sato-agent-templates\/actions\/runs\/1/);
-  assert.doesNotMatch(r.stdout, /\b(safe|unsafe|secure|guaranteed|best)\b/i);
+  // Action ids (safe.info / safe.propose name the Safe product) are identifiers, not claims.
+  assert.doesNotMatch(r.stdout.replace(/\bsafe\.(info|propose)\b/g, ""), /\b(safe|unsafe|secure|guaranteed|best)\b/i);
 });
 
 for (const [mode, re] of [["down", /could not be read/], ["http429", /HTTP 429/], ["badshape", /did not return a sato\.template-drift\/v1 document/]] as const) {
