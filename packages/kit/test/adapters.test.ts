@@ -16,7 +16,7 @@ const ALL = toolDefinitions({ actions: coreActions(), toolsets: "all" });
 const WRITE = ALL.filter(requiresApproval).map((d) => d.name).sort();
 
 test("approval set comes from the surface: execute plus the prepare tools that sign, pay or broadcast", () => {
-  assert.deepEqual(WRITE, ["erc8004_register", "execute", "swap_prepare", "token_approvals_revoke", "x402_prepare"]);
+  assert.deepEqual(WRITE, ["bridge_prepare", "erc8004_register", "execute", "swap_prepare", "token_approvals_revoke", "x402_prepare"]);
 });
 
 test("ai-sdk: toolsets all adds the two extra tools; needsApproval only on write tools; toolApproval mirrors it", async () => {
