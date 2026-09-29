@@ -20,7 +20,8 @@ import type { ActionDescriptor, OdaEffect, SatoPolicy } from "../spec/index.js";
 import { POLICY_SCHEMA_ID, approvalHints, parsePolicyFile } from "../spec/index.js";
 import type { AnyAction, Kit, KitFetch } from "../types.js";
 import {
-  ACTIONS_STATUS_URL,
+  readActionsStatusDoc,
+  type StatusFetch,
   SERVER_INSTRUCTIONS,
   buildStatus,
   resolveTool,
@@ -96,18 +97,15 @@ function fail(message: string, extra: Record<string, unknown> = {}): CallToolRes
   return { isError: true, content: [{ type: "text", text: textMirror(`Error: ${message}`, extra) }], _meta: { [ERROR_META_KEY]: { error: message, ...extra } } };
 }
 
-async function fetchActionsStatus(f: KitFetch, url: string): Promise<unknown | null> {
-  const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), STATUS_FETCH_TIMEOUT_MS);
-  try {
-    const r = await f(url, { signal: ctl.signal, headers: { "user-agent": KIT_USER_AGENT, accept: "application/json" } });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(t);
-  }
+async function fetchActionsStatus(f: KitFetch, url: string | undefined): Promise<unknown | null> {
+  // An explicit URL (tests) is read alone; the default reads the status branch
+  // with the 404-only fallback to the frozen main copy.
+  const r = await readActionsStatusDoc(f as unknown as StatusFetch, {
+    timeoutMs: STATUS_FETCH_TIMEOUT_MS,
+    headers: { "user-agent": KIT_USER_AGENT },
+    ...(url ? { primaryUrl: url, fallbackUrl: null } : {}),
+  });
+  return r.doc;
 }
 
 function toMcpTool(d: ToolDef): Tool {
@@ -128,7 +126,7 @@ export function createKitMcpServer(kit: Kit, opts: KitMcpServerOptions = {}): Se
   const byName = new Map(defs.map((d) => [d.name, d]));
   const policy = opts.policy ?? defaultPolicy();
   const fetchImpl: KitFetch = opts.fetch ?? ((...a: Parameters<typeof fetch>) => globalThis.fetch(...a));
-  const statusUrl = opts.actionsStatusUrl ?? ACTIONS_STATUS_URL;
+  const statusUrl = opts.actionsStatusUrl;
 
   const validator = new AjvJsonSchemaValidator();
   const inputValidators = new Map<string, (v: unknown) => { valid: boolean; errorMessage?: string }>();
