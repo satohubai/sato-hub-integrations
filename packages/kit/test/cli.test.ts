@@ -49,6 +49,9 @@ globalThis.fetch = async (input, init) => {
   if (url === "https://paid.fixture/data") return new Response(JSON.stringify(x402), { status: 402, headers: { "content-type": "application/json" } });
   if (url.endsWith("/actions-status.json")) {
     if (mode === "down") throw new TypeError("fetch failed");
+    const onStatusBranch = url.includes("/sato-agent-templates/status/");
+    if (onStatusBranch && mode === "status404") return new Response("404: Not Found", { status: 404 });
+    if (onStatusBranch && mode === "status500") return new Response("oops", { status: 500 });
     return new Response(JSON.stringify(status), { status: 200 });
   }
   throw new TypeError("offline test: no fixture for " + url);
@@ -161,6 +164,8 @@ test("doctor --json shape: versions, policy, signer, network, per-action status"
   assert.equal(d.network, "fork");
   assert.deepEqual(d.signer, { configured: false });
   assert.equal(d.status_source, "reachable");
+  assert.equal(d.status_answered_by, "status-branch");
+  assert.match(d.status_url, /sato-agent-templates\/status\/actions-status\.json$/);
   const cr = d.actions.find((a: any) => a.id === "chain.read");
   assert.deepEqual(cr, { id: "chain.read", name: "chain_read", result: "green", last_green: "2026-09-26" });
   const sq = d.actions.find((a: any) => a.id === "swap.quote");
@@ -179,6 +184,21 @@ test("doctor: Sato Status unreachable → unknown with a reason, never invented"
   assert.equal(d.status_source, "unreachable");
   assert.match(d.status_reason, /could not be read/);
   assert.ok(d.actions.every((a: any) => a.result === "unknown" && !("last_green" in a)));
+});
+
+test("doctor: status branch 404 → reads the frozen main copy and says so", () => {
+  const d = json(run(["doctor", "--json"], { env: { CLI_TEST_STATUS: "status404" } }).stdout).result;
+  assert.equal(d.status_source, "reachable");
+  assert.equal(d.status_answered_by, "main-fallback");
+  assert.match(d.status_url, /sato-agent-templates\/main\/actions-status\.json$/);
+});
+
+test("doctor: status branch 500 → unreachable, never silently the main copy", () => {
+  const d = json(run(["doctor", "--json"], { env: { CLI_TEST_STATUS: "status500" } }).stdout).result;
+  assert.equal(d.status_source, "unreachable");
+  assert.equal(d.status_answered_by, null);
+  assert.match(d.status_reason, /HTTP 500/);
+  assert.ok(d.actions.every((a: any) => a.result === "unknown"));
 });
 
 test("doctor: an invalid policy.json is reported, not replaced by the default", () => {

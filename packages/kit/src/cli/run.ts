@@ -190,32 +190,24 @@ async function cmdExecute(p: Parsed, io: CliIo): Promise<Out> {
   return { receipt };
 }
 
-async function readActionsStatus(fetchFn: typeof fetch | undefined): Promise<{ doc: unknown | null; reason?: string }> {
-  const { ACTIONS_STATUS_URL } = await import("../surface/index.js");
+async function readActionsStatus(fetchFn: typeof fetch | undefined): Promise<{ doc: unknown | null; reason?: string; url: string; source: string | null }> {
+  const { readActionsStatusDoc } = await import("../surface/index.js");
   const f = fetchFn ?? globalThis.fetch;
-  try {
-    const res = await f(ACTIONS_STATUS_URL, {
-      headers: { "user-agent": `@satohub/kit/${KIT_VERSION}`, accept: "application/json" },
-      signal: AbortSignal.timeout(DOCTOR_STATUS_TIMEOUT_MS),
-    });
-    if (!res.ok) return { doc: null, reason: `Sato Status answered HTTP ${res.status}` };
-    const doc = (await res.json()) as { schema?: unknown; actions?: unknown };
-    if (!doc || doc.schema !== "sato.action-status/v1" || !Array.isArray(doc.actions)) {
-      return { doc: null, reason: "Sato Status did not return a sato.action-status/v1 document" };
-    }
-    return { doc };
-  } catch (e) {
-    const err = e as Error;
-    const reason = err.name === "TimeoutError" || err.name === "AbortError"
-      ? `Sato Status did not answer within ${DOCTOR_STATUS_TIMEOUT_MS / 1000} s`
-      : `Sato Status could not be read: ${err.message}`;
-    return { doc: null, reason };
+  const r = await readActionsStatusDoc(f as never, {
+    timeoutMs: DOCTOR_STATUS_TIMEOUT_MS,
+    headers: { "user-agent": `@satohub/kit/${KIT_VERSION}` },
+  });
+  if (r.doc === null) return { doc: null, reason: r.reason, url: r.url, source: null };
+  const doc = r.doc as { schema?: unknown; actions?: unknown };
+  if (!doc || doc.schema !== "sato.action-status/v1" || !Array.isArray(doc.actions)) {
+    return { doc: null, reason: `Sato Status did not return a sato.action-status/v1 document at ${r.url}`, url: r.url, source: null };
   }
+  return { doc, url: r.url, source: r.source };
 }
 
 async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
   if (p.positionals.length > 0) throw new CliError("usage", `unexpected argument "${p.positionals[0]}"`);
-  const [{ toolDefinitions, buildStatus, ACTIONS_STATUS_URL }, { coreActions }] = await Promise.all([
+  const [{ toolDefinitions, buildStatus }, { coreActions }] = await Promise.all([
     import("../surface/index.js"),
     import("../actions/registry.js"),
   ]);
@@ -249,8 +241,9 @@ async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
       policy,
       network,
       signer,
-      status_url: ACTIONS_STATUS_URL,
+      status_url: s.url,
       status_source: s.doc ? "reachable" : "unreachable",
+      status_answered_by: s.source,
       ...(s.reason ? { status_reason: s.reason } : {}),
       actions: rows.map((r) => {
         const d = defs.find((x) => x.name === r.name);
