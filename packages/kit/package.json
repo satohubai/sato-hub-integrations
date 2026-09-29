@@ -68,6 +68,10 @@
     "./langchain": {
       "types": "./dist/adapters/langchain.d.ts",
       "default": "./dist/adapters/langchain.js"
+    },
+    "./sato-os": {
+      "types": "./dist/sato-os/index.d.ts",
+      "default": "./dist/sato-os/index.js"
     }
   },
   "files": [
