@@ -10,12 +10,14 @@ import { bridgePrepareAction } from "./bridge_prepare.js";
 import { x402PrepareAction } from "./x402_prepare.js";
 import { tokenApprovalsListAction, tokenApprovalsRevokeAction } from "./token_approvals.js";
 import { erc8004RegisterAction } from "./erc8004_register.js";
+import { solanaActions } from "./solana.js";
 
 export function coreActions(): readonly AnyAction[] {
   return [chainReadAction(), swapQuoteAction(), swapPrepareAction(), x402PrepareAction(), erc8004LookupAction(), txSimulateAction(),
     tokenApprovalsListAction(), tokenApprovalsRevokeAction(),
     erc8004RegisterAction(),
     bridgeQuoteAction(), bridgePrepareAction(),
+    ...solanaActions(),
   ];
 }
 

@@ -1,0 +1,14 @@
+{
+  "_source": "https://api.devnet.solana.com getLatestBlockhash",
+  "_note": "Recorded 2026-09-28 from the public endpoint named in _source; trimmed. The JSON-RPC 'result' only.",
+  "result": {
+    "context": {
+      "apiVersion": "4.3.0",
+      "slot": 505399021
+    },
+    "value": {
+      "blockhash": "EXVz86WnUpY5HTnwwZQhMo8oRos1Wv3nmRQtfHvRqXA8",
+      "lastValidBlockHeight": 492648662
+    }
+  }
+}
