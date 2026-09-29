@@ -15,7 +15,7 @@ export const VERSION = "0.1.0";
 export const USER_AGENT = `create-sato-agent/${VERSION}`;
 export const DEFAULT_API = "https://satohub.ai/api/create";
 /** The templates commit the --offline path copies from. Bumped by hand with each release. */
-export const TEMPLATES_SHA = "17df123a01734e007211105ec2445f5aabc7c590";
+export const TEMPLATES_SHA = "63fc38a9f7926abd4b19a7dba120f61f4fd26b1c";
 export const TEMPLATES_TARBALL_URL = `https://codeload.github.com/satohubai/sato-agent-templates/tar.gz/${TEMPLATES_SHA}`;
 export const DEFAULT_OFFLINE_TEMPLATE = "base-guarded-trader";
 

@@ -5,7 +5,8 @@ template that is checked nightly in
 [satohubai/sato-agent-templates](https://github.com/satohubai/sato-agent-templates);
 the CLI writes it into a new directory, runs `npm ci` and makes a first git commit.
 
-> **Status: 0.1.0, unpublished.** Only `plain-ts` templates exist in M1.
+> **Status: 0.1.0.** The templates and each one's latest nightly result are listed at
+> [satohub.ai/templates](https://satohub.ai/templates) and [satohub.ai/status](https://satohub.ai/status).
 
 ```sh
 npx create-sato-agent@0.1 "swap USDC to ETH on Base under a daily cap" --framework plain-ts

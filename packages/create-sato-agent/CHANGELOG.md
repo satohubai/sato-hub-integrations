@@ -2,7 +2,7 @@
 
 ## 0.1.0 — first release
 
-Release date: set on the day it is published to npm.
+Release date: 2026-09-29.
 
 - `npm create sato-agent` / `npx create-sato-agent`: sends a plain-words goal to
   `POST https://satohub.ai/api/create` to choose a template from `satohubai/sato-agent-templates`,
