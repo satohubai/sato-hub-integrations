@@ -1,0 +1,11 @@
+{
+  "_source": "https://api.mainnet-beta.solana.com getBalance",
+  "_note": "Recorded 2026-09-28 from the public endpoint named in _source; trimmed. The JSON-RPC 'result' only.",
+  "result": {
+    "context": {
+      "apiVersion": "4.3.0",
+      "slot": 451528193
+    },
+    "value": 10772651926336128
+  }
+}

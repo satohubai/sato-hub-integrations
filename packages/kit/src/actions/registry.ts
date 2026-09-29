@@ -11,6 +11,7 @@ import { x402PrepareAction } from "./x402_prepare.js";
 import { tokenApprovalsListAction, tokenApprovalsRevokeAction } from "./token_approvals.js";
 import { erc8004RegisterAction } from "./erc8004_register.js";
 import { safeInfoAction, safeProposeAction } from "../safe/actions.js";
+import { solanaActions } from "./solana.js";
 
 export function coreActions(): readonly AnyAction[] {
   return [chainReadAction(), swapQuoteAction(), swapPrepareAction(), x402PrepareAction(), erc8004LookupAction(), txSimulateAction(),
@@ -18,6 +19,7 @@ export function coreActions(): readonly AnyAction[] {
     erc8004RegisterAction(),
     bridgeQuoteAction(), bridgePrepareAction(),
     safeInfoAction(), safeProposeAction(),
+    ...solanaActions(),
   ];
 }
 
