@@ -229,6 +229,9 @@ export function proposalArguments(prepared: PreparedIntent, opts: { agentId?: st
   if (u.kind === "x402_payment") {
     return { ...base, intentType: "x402_payment", chain: u.network, targetAddress: u.pay_to, targetLabel: u.resource.slice(0, 128), x402Url: u.resource, symbol: u.asset };
   }
+  if (u.kind !== "evm_tx") {
+    throw new Error(`Sato OS proposals take evm_tx and x402_payment intents; this one is ${u.kind}`);
+  }
   return { ...base, intentType: "call_contract", chain: u.chain, targetAddress: u.to, targetLabel: prepared.action };
 }
 

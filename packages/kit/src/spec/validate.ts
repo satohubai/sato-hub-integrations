@@ -14,7 +14,7 @@
  */
 
 import { ACTION_SCHEMA_ID, MOVES_FUNDS, ODA_CHAINS, ODA_EFFECTS, type ActionDescriptor } from "./types.js";
-import { DIGEST_RE, INTENT_ID_RE, RECEIPT_SCHEMA_ID, RECEIPT_STATUSES, type Receipt } from "./intent.js";
+import { DIGEST_RE, INTENT_ID_RE, RECEIPT_SCHEMA_ID, RECEIPT_STATUSES, UNSIGNED_PAYLOAD_KINDS, type Receipt, type UnsignedPayload } from "./intent.js";
 import { isPolicyRuleId } from "./policy.js";
 import { ODA_ID_RE, TOOL_NAME_RE } from "./names.js";
 
@@ -97,11 +97,100 @@ const RECEIPT_KEYS = [
   "simulation", "fee_disclosure", "tx_hash", "status", "created_at", "mandate",
 ] as const;
 
+/** Optional receipt fields, additive in Phase 2 wave 2. Absent is always valid. */
+export const RECEIPT_OPTIONAL_KEYS = ["safe_tx_hash", "signature"] as const;
+export const SAFE_TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/;
+/** 64 bytes in base58: 86–88 characters. */
+export const SOLANA_SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{86,88}$/;
+/** A 32-byte public key or blockhash in base58: 32–44 characters. */
+export const SOLANA_PUBKEY_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const EVM_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+/** Non-empty, padded standard base64. */
+const BASE64_RE = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$/;
+const DECIMAL_RE = /^[0-9]+$/;
+
+function positiveInt(v: unknown): boolean {
+  return typeof v === "number" && Number.isInteger(v) && v > 0;
+}
+
+function payloadEvm(p: Record<string, unknown>, e: string[]): void {
+  onlyKeys(p, ["kind", "chain", "chain_id", "from", "to", "data", "value"], "evm_tx", e);
+  if (typeof p.chain !== "string" || !p.chain) e.push("evm_tx.chain must be a string");
+  if (!positiveInt(p.chain_id)) e.push("evm_tx.chain_id must be a positive integer");
+  if (p.from !== null && (typeof p.from !== "string" || !EVM_ADDRESS_RE.test(p.from))) e.push("evm_tx.from must be an address or null");
+  if (typeof p.to !== "string" || !EVM_ADDRESS_RE.test(p.to)) e.push("evm_tx.to must be an address");
+  if (typeof p.data !== "string" || !/^0x(?:[0-9a-fA-F]{2})*$/.test(p.data)) e.push("evm_tx.data must be 0x-prefixed hex");
+  if (typeof p.value !== "string" || !DECIMAL_RE.test(p.value)) e.push("evm_tx.value must be a decimal string");
+}
+
+function payloadX402(p: Record<string, unknown>, e: string[]): void {
+  onlyKeys(p, ["kind", "network", "resource", "pay_to", "asset", "amount"], "x402_payment", e);
+  for (const k of ["network", "resource", "pay_to", "asset"] as const) if (typeof p[k] !== "string" || !p[k]) e.push(`x402_payment.${k} must be a string`);
+  if (typeof p.amount !== "string" || !DECIMAL_RE.test(p.amount)) e.push("x402_payment.amount must be a decimal string");
+}
+
+function payloadTypedData(p: Record<string, unknown>, e: string[]): void {
+  onlyKeys(p, ["kind", "chain", "chain_id", "signer", "domain", "types", "primaryType", "message", "submit"], "typed_data", e);
+  need(p, ["submit"], "typed_data", e);
+  if (typeof p.chain !== "string" || !p.chain) e.push("typed_data.chain must be a string");
+  if (!positiveInt(p.chain_id)) e.push("typed_data.chain_id must be a positive integer");
+  if (typeof p.signer !== "string" || !EVM_ADDRESS_RE.test(p.signer)) e.push("typed_data.signer must be an address");
+  if (!isObj(p.domain)) e.push("typed_data.domain must be an object");
+  if (!isObj(p.message)) e.push("typed_data.message must be an object");
+  const t = p.types;
+  const typesOk = isObj(t) && Object.values(t).every((fields) => Array.isArray(fields) && fields.every((f) => isObj(f) && typeof f.name === "string" && typeof f.type === "string"));
+  if (!typesOk) e.push("typed_data.types must map type names to [{ name, type }]");
+  if (typeof p.primaryType !== "string" || !isObj(t) || !Object.prototype.hasOwnProperty.call(t, p.primaryType)) e.push("typed_data.primaryType must name a key of types");
+  const s = p.submit;
+  if (s !== null && s !== undefined) {
+    if (!isObj(s) || s.kind !== "safe_tx_service" || typeof s.url !== "string" || !/^https:\/\/\S+$/.test(s.url) || typeof s.safe_address !== "string" || !EVM_ADDRESS_RE.test(s.safe_address)) {
+      e.push("typed_data.submit must be null or { kind: 'safe_tx_service', url: https://…, safe_address }");
+    } else onlyKeys(s, ["kind", "url", "safe_address"], "typed_data.submit", e);
+  }
+}
+
+function payloadSolana(p: Record<string, unknown>, e: string[]): void {
+  onlyKeys(p, ["kind", "chain", "fee_payer", "transaction_base64", "recent_blockhash", "last_valid_block_height"], "solana_tx", e);
+  if (p.chain !== "solana" && p.chain !== "solana-devnet") e.push("solana_tx.chain must be solana or solana-devnet");
+  if (typeof p.fee_payer !== "string" || !SOLANA_PUBKEY_RE.test(p.fee_payer)) e.push("solana_tx.fee_payer must be a base58 public key");
+  if (typeof p.transaction_base64 !== "string" || !BASE64_RE.test(p.transaction_base64)) e.push("solana_tx.transaction_base64 must be non-empty base64");
+  if (typeof p.recent_blockhash !== "string" || !SOLANA_PUBKEY_RE.test(p.recent_blockhash)) e.push("solana_tx.recent_blockhash must be base58");
+  const h = p.last_valid_block_height;
+  if (typeof h !== "number" || !Number.isInteger(h) || h < 0) e.push("solana_tx.last_valid_block_height must be a non-negative integer");
+}
+
+/**
+ * Validates a PreparedIntent's `unsigned` payload. Four kinds: evm_tx and
+ * x402_payment (M0), typed_data and solana_tx (additive in Phase 2 wave 2).
+ * Any other kind is refused, never passed through.
+ */
+export function validateUnsignedPayload(input: unknown): Validation<UnsignedPayload> {
+  const e: string[] = [];
+  if (!isObj(input)) return { ok: false, errors: ["unsigned payload must be an object"] };
+  switch (input.kind) {
+    case "evm_tx": payloadEvm(input, e); break;
+    case "x402_payment": payloadX402(input, e); break;
+    case "typed_data": payloadTypedData(input, e); break;
+    case "solana_tx": payloadSolana(input, e); break;
+    default: return { ok: false, errors: [`unsigned.kind must be one of ${UNSIGNED_PAYLOAD_KINDS.join(", ")}`] };
+  }
+  return e.length ? { ok: false, errors: e } : { ok: true, value: input as unknown as UnsignedPayload };
+}
+
+/** Parse helper: the payload, or a throw naming every error. */
+export function parseUnsignedPayload(input: unknown): UnsignedPayload {
+  const v = validateUnsignedPayload(input);
+  if (!v.ok) throw new Error(`invalid unsigned payload: ${v.errors.join("; ")}`);
+  return v.value;
+}
+
 export function validateReceipt(input: unknown): Validation<Receipt> {
   const e: string[] = [];
   if (!isObj(input)) return { ok: false, errors: ["receipt must be an object"] };
-  onlyKeys(input, RECEIPT_KEYS, "receipt", e);
+  onlyKeys(input, [...RECEIPT_KEYS, ...RECEIPT_OPTIONAL_KEYS], "receipt", e);
   need(input, RECEIPT_KEYS, "receipt", e);
+  if ("safe_tx_hash" in input && (typeof input.safe_tx_hash !== "string" || !SAFE_TX_HASH_RE.test(input.safe_tx_hash))) e.push("safe_tx_hash must be 0x + 64 hex");
+  if ("signature" in input && (typeof input.signature !== "string" || !SOLANA_SIGNATURE_RE.test(input.signature))) e.push("signature must be a base58 Solana signature");
   if (input.schema !== RECEIPT_SCHEMA_ID) e.push(`schema must be ${JSON.stringify(RECEIPT_SCHEMA_ID)}`);
   if (typeof input.seq !== "number" || !Number.isInteger(input.seq) || input.seq < 0) e.push("seq must be a non-negative integer");
   for (const k of ["prev_hash", "hash", "params_digest"] as const) {

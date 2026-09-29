@@ -17,3 +17,9 @@ export { loadOrCreateIntentSecret, verifyIntentId } from "./intent/index.js";
 export * from "./surface/index.js";
 export { loadKitFromEnv, rpcEnvName, KitConfigError, DEFAULT_FORK_RPC_URL, SATO_DIR, POLICY_FILE } from "./config/index.js";
 export type { LoadKitOptions, LoadedKit } from "./config/index.js";
+
+// Phase 2 wave 2: typed_data (Safe Transaction Service) and solana_tx payloads.
+export { solanaJsonRpc, simulateSolanaTx, sendSignedSolanaTx, SolanaRpcError, SOLANA_MAINNET_GENESIS_HASH } from "./solana/index.js";
+export { proposeToSafeTxService, safeProposalUrl, typedDataHash } from "./safe/index.js";
+export { TYPED_DATA_NO_SIMULATION_REASON } from "./kit.js";
+export type { SimulateSolanaTx } from "./kit.js";
