@@ -6,9 +6,14 @@ import { swapPrepareAction } from "./swap_prepare.js";
 import { swapQuoteAction } from "./swap_quote.js";
 import { txSimulateAction } from "./tx_simulate.js";
 import { x402PrepareAction } from "./x402_prepare.js";
+import { tokenApprovalsListAction, tokenApprovalsRevokeAction } from "./token_approvals.js";
+import { erc8004RegisterAction } from "./erc8004_register.js";
 
 export function coreActions(): readonly AnyAction[] {
-  return [chainReadAction(), swapQuoteAction(), swapPrepareAction(), x402PrepareAction(), erc8004LookupAction(), txSimulateAction()];
+  return [chainReadAction(), swapQuoteAction(), swapPrepareAction(), x402PrepareAction(), erc8004LookupAction(), txSimulateAction(),
+    tokenApprovalsListAction(), tokenApprovalsRevokeAction(),
+    erc8004RegisterAction(),
+  ];
 }
 
 /** Lazily built so importing the module never throws. */
