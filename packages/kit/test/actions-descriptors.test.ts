@@ -9,7 +9,7 @@ import {
 } from "../src/spec/index.js";
 import { PKG_ROOT } from "./fixtures/actions-harness.js";
 
-const EXPECTED_IDS = ["chain.read", "swap.quote", "swap.prepare", "x402.prepare", "erc8004.lookup", "tx.simulate", "token.approvals.list", "token.approvals.revoke", "erc8004.register", "bridge.quote", "bridge.prepare"];
+const EXPECTED_IDS = ["chain.read", "swap.quote", "swap.prepare", "x402.prepare", "erc8004.lookup", "tx.simulate", "token.approvals.list", "token.approvals.revoke", "erc8004.register", "bridge.quote", "bridge.prepare", "solana.read", "solana.transfer", "solana.swap.quote", "solana.swap.prepare"];
 
 test("CORE_ACTIONS lists the core set in a stable order", () => {
   assert.deepEqual(CORE_ACTIONS.list().map((a) => a.descriptor.id), EXPECTED_IDS);
@@ -42,7 +42,7 @@ test("names map deterministically both ways", () => {
   const a = coreActions().map((x) => x.descriptor);
   const b = coreActions().map((x) => x.descriptor);
   assert.deepEqual(a.map((d) => d.name), b.map((d) => d.name));
-  assert.deepEqual(a.map((d) => d.name), ["chain_read", "swap_quote", "swap_prepare", "x402_prepare", "erc8004_lookup", "tx_simulate", "token_approvals_list", "token_approvals_revoke", "erc8004_register", "bridge_quote", "bridge_prepare"]);
+  assert.deepEqual(a.map((d) => d.name), ["chain_read", "swap_quote", "swap_prepare", "x402_prepare", "erc8004_lookup", "tx_simulate", "token_approvals_list", "token_approvals_revoke", "erc8004_register", "bridge_quote", "bridge_prepare", "solana_read", "solana_transfer", "solana_swap_quote", "solana_swap_prepare"]);
   const ids = a.map((d) => d.id);
   for (const d of a) {
     assert.equal(d.name, odaIdToToolName(d.id));
