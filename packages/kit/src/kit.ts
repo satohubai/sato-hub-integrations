@@ -40,6 +40,7 @@ import type {
 } from "./types.js";
 import { sendSignedSolanaTx, simulateSolanaTx } from "./solana/index.js";
 import { proposeToSafeTxService } from "./safe/index.js";
+import { resolveSafeTxService, safeApiKeyFor } from "./safe/service.js";
 import { evaluatePreflight } from "./policy/preflight.js";
 import { simulateTx } from "./actions/tx_simulate.js";
 import { ActionRefusedError } from "./actions/_util.js";
@@ -117,6 +118,7 @@ export function createKit(opts: KitOptions): Kit {
     policy,
     userAgent: opts.userAgent ?? KIT_USER_AGENT,
     fixtures: opts.fixtures,
+    safeTxService: resolveSafeTxService(opts.safeTxService),
   };
 
   const iso = (ms: number) => new Date(ms).toISOString();
@@ -136,7 +138,7 @@ export function createKit(opts: KitOptions): Kit {
     status: ReceiptStatus,
     tx_hash: string | null,
     approval: "human" | "policy" | "none",
-    extra: { safe_tx_hash?: string; signature?: string } = {},
+    extra: { safe_tx_hash?: string; signature?: string; typed_data_signature?: string } = {},
   ): Promise<Receipt> {
     const i = r.intent;
     return receipts.append({
@@ -179,15 +181,22 @@ export function createKit(opts: KitOptions): Kit {
     return refusals.map((x) => `${x.rule} (limit ${x.limit}, observed ${x.observed})`).join("; ");
   }
 
-  /** signTypedData, then the Safe Transaction Service POST when `submit` is set. Returns the safeTxHash, or null. */
-  async function executeTypedData(u: UnsignedTypedData, signer: Signer): Promise<string | null> {
+  /**
+   * signTypedData, then the Safe Transaction Service POST when `submit` is set.
+   * With a submit block: returns the safeTxHash. Without one: returns the
+   * signature itself, so it lands on the receipt instead of being lost.
+   */
+  async function executeTypedData(u: UnsignedTypedData, signer: Signer): Promise<{ safe_tx_hash: string } | { typed_data_signature: string }> {
     const addr = await signer.address(u.chain as never);
     if (addr.toLowerCase() !== u.signer.toLowerCase()) {
       throw new Error(`typed_data names signer ${u.signer}, but the configured signer is ${addr}`);
     }
     const signature = await signer.signTypedData({ domain: u.domain, types: u.types, primaryType: u.primaryType, message: u.message });
-    if (!u.submit) return null;
-    return proposeToSafeTxService(u, signature, { fetch: ctx.fetch, userAgent: ctx.userAgent });
+    if (!u.submit) return { typed_data_signature: signature };
+    const safe_tx_hash = await proposeToSafeTxService(u, signature, {
+      fetch: ctx.fetch, userAgent: ctx.userAgent, apiKey: safeApiKeyFor(ctx.safeTxService, u.submit.url),
+    });
+    return { safe_tx_hash };
   }
 
   /** sendSolanaTransaction when the signer has it; otherwise signSolanaTransaction + the kit's solanaRpc. */
@@ -347,8 +356,8 @@ export function createKit(opts: KitOptions): Kit {
       const u = once.unsigned;
       try {
         if (u.kind === "typed_data") {
-          const safe_tx_hash = await executeTypedData(u, signer);
-          return writeReceipt(once, "executed", null, approval, safe_tx_hash ? { safe_tx_hash } : {});
+          const extra = await executeTypedData(u, signer);
+          return writeReceipt(once, "executed", null, approval, extra);
         }
         if (u.kind === "solana_tx") {
           const signature = await executeSolana(u, signer);
