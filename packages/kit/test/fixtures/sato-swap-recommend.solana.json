@@ -1,0 +1,24 @@
+{
+  "_source": "POST https://satohub.ai/api/swap/quote chain_in solana SOL->USDC amount_in 100000000 mode recommend",
+  "_note": "Recorded 2026-09-28; HTTP body, trimmed to the fields the kit reads.",
+  "body": {
+    "mode": "recommend",
+    "route_id": "rt_bifqk3dwr35n",
+    "venue": "jupiter-aggregator",
+    "chain": "solana",
+    "token_in": "So11111111111111111111111111111111111111112",
+    "token_out": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "amount_in": "100000000",
+    "amount_out": "11763653",
+    "sato_fee_bps": 15,
+    "sato_fee_recipient": "HnyyFHhp3LQ6VfRn1AhPHSwboYYQa1HT7REaMfzsA8gx",
+    "disclosure": "Sato Route takes 15 bps (0.15%) on the input leg, charged inside the swap transaction by the aggregator's own router to the Sato fee address HnyyFHhp3LQ6VfRn1AhPHSwboYYQa1HT7REaMfzsA8gx. Stable-to-stable pairs are 3 bps; any volatile leg is 15 bps; cross-chain is 25 bps. Sato Hub does not sign this transaction, hold your funds or move them \u2014 you sign it. A failed, reverted or unsigned trade pays nothing. On Jupiter the fee is platformFeeBps on the quote, paid in the input mint into the Sato referral token account HnyyFHhp3LQ6VfRn1AhPHSwboYYQa1HT7REaMfzsA8gx \u2014 pass it as feeAccount on POST /swap. It is the Referral-program PDA of the Sato referral account GwRkq9EBWwcLNbFzYYGSKkgoBYo4grLvCV67dHoEZ4ZB for that mint. That account exists on mainnet as a token account for mint So11111111111111111111111111111111111111112 (checked by public RPC). The transaction Jupiter returns is UNSIGNED \u2014 you sign it.",
+    "tx": null,
+    "withheld": {
+      "reason": "mode \"recommend\" never returns calldata. the gate refused: recipient: We hold no record of recipient: The intent carries neither a recipient nor a taker, so there is no address to check. This policy refuses on unknown.",
+      "rule": "E8"
+    },
+    "checked_at": "2026-09-29T04:02:16.653Z",
+    "caveat": "A route is a recommendation, chosen on the fields named in chosen_by as they read on checked_at. It is not a security review, a quality judgment, or a statement about price, execution or returns \u2014 a quote is a quote, not a fill. Sato Hub does not sign, hold or move funds; the caller signs the transaction it is handed."
+  }
+}

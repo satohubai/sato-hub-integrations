@@ -1,0 +1,31 @@
+{
+  "_source": "https://api.devnet.solana.com getAccountInfo (devnet USDC mint, jsonParsed)",
+  "_note": "Recorded 2026-09-28 from the public endpoint named in _source; trimmed. The JSON-RPC 'result' only.",
+  "result": {
+    "context": {
+      "apiVersion": "4.3.0",
+      "slot": 505399023
+    },
+    "value": {
+      "data": {
+        "parsed": {
+          "info": {
+            "decimals": 6,
+            "freezeAuthority": "CJtyoKSLrktozQzjERTiK3btQtiTK3nN4QrqGHLidyCT",
+            "isInitialized": true,
+            "mintAuthority": "GrNg1XM2ctzeE2mXxXCfhcTUbejM8Z4z4wNVTy2FjMEz",
+            "supply": "16286767458734257769"
+          },
+          "type": "mint"
+        },
+        "program": "spl-token",
+        "space": 82
+      },
+      "executable": false,
+      "lamports": 421925785289,
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "rentEpoch": 18446744073709551615,
+      "space": 82
+    }
+  }
+}

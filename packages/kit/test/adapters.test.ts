@@ -16,7 +16,7 @@ const ALL = toolDefinitions({ actions: coreActions(), toolsets: "all" });
 const WRITE = ALL.filter(requiresApproval).map((d) => d.name).sort();
 
 test("approval set comes from the surface: execute plus the prepare tools that sign, pay or broadcast", () => {
-  assert.deepEqual(WRITE, ["bridge_prepare", "erc8004_register", "execute", "swap_prepare", "token_approvals_revoke", "x402_prepare"]);
+  assert.deepEqual(WRITE, ["bridge_prepare", "erc8004_register", "execute", "solana_swap_prepare", "solana_transfer", "swap_prepare", "token_approvals_revoke", "x402_prepare"]);
 });
 
 test("ai-sdk: toolsets all adds the two extra tools; needsApproval only on write tools; toolApproval mirrors it", async () => {
@@ -137,7 +137,7 @@ test("actions_search and actions_describe accept an ODA id or a tool name", asyn
   const { kit, policy } = await fixtureKit();
   const s = kitSurface(kit, { policy });
   const found: any = await s.call("actions_search", { query: "swap" });
-  assert.deepEqual(found.result.results.map((r: any) => r.name).sort(), ["swap_prepare", "swap_quote"]);
+  assert.deepEqual(found.result.results.map((r: any) => r.name).sort(), ["solana_swap_prepare", "solana_swap_quote", "swap_prepare", "swap_quote"]);
   for (const q of ["swap.prepare", "swap_prepare"]) {
     const d: any = await s.call("actions_describe", { action: q });
     assert.equal(d.ok, true, q);
