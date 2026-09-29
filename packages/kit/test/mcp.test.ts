@@ -52,7 +52,7 @@ test("tools/list default profile = the eight names, each with outputSchema + ann
 test("--toolsets all adds erc8004_lookup and tx_simulate", async () => {
   const { client, server } = await connect("all");
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate"]);
+  assert.deepEqual(tools.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate", "bridge_quote", "bridge_prepare"]);
   await client.close(); await server.close();
 });
 
