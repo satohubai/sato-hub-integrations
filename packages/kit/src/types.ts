@@ -71,6 +71,8 @@ export type PreflightFacts = {
   usd_spent_today: number | null;
   contract?: string;
   recipient?: string;
+  /** Address granted (or losing) an allowance or operator approval. Informational: no rule reads it. */
+  spender?: string;
   venue?: string;
   slippage_bps?: number;
   /** null = not simulated (rule simulation_required). */
