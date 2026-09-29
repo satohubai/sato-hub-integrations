@@ -1,0 +1,18 @@
+{
+  "note": "Recorded keyless from https://mainnet.base.org by eth_call at a pinned block; replay on a fork (anvil --fork-url <rpc> --fork-block-number <block>) to re-simulate.",
+  "chain": "base",
+  "chain_id": 8453,
+  "block": "51931175",
+  "registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+  "from": "0x1111111111111111111111111111111111111111",
+  "agent_uri": "https://example.com/.well-known/agent-registration.json",
+  "tx": {
+    "to": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "data": "0xf2c298be0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000003768747470733a2f2f6578616d706c652e636f6d2f2e77656c6c2d6b6e6f776e2f6167656e742d726567697374726174696f6e2e6a736f6e000000000000000000",
+    "value": "0"
+  },
+  "eth_call": {
+    "result": "0x00000000000000000000000000000000000000000000000000000000000177a1"
+  },
+  "estimate_gas": "163219"
+}
