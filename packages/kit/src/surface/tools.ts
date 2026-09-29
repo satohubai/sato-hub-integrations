@@ -63,8 +63,15 @@ export const DEFAULT_TOOL_NAMES = [
 export const META_TOOL_NAMES = ["execute", "status", "actions_search", "actions_describe"] as const;
 export type MetaToolName = (typeof META_TOOL_NAMES)[number];
 
-/** Sato Status: the nightly per-action results (sato.action-status/v1). */
-export const ACTIONS_STATUS_URL = "https://raw.githubusercontent.com/satohubai/sato-agent-templates/main/actions-status.json";
+/**
+ * Sato Status: the nightly per-action results (sato.action-status/v1).
+ * The templates repo's bot writes it to the data-only `status` branch; main
+ * keeps a FROZEN copy during the switch, read only when the status branch
+ * answers 404 (see readActionsStatusDoc).
+ */
+export const ACTIONS_STATUS_URL = "https://raw.githubusercontent.com/satohubai/sato-agent-templates/status/actions-status.json";
+/** Frozen copy on main; a fallback for a 404 on ACTIONS_STATUS_URL only. */
+export const ACTIONS_STATUS_FALLBACK_URL = "https://raw.githubusercontent.com/satohubai/sato-agent-templates/main/actions-status.json";
 
 const DATE_SCHEMA = { type: "string", pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" } as const;
 

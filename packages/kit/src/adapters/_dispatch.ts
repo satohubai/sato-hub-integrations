@@ -13,7 +13,7 @@
 // The policy is a PRE-FLIGHT that explains refusals; the signer enforces.
 // Approval is the host's job (needsApproval, a PreToolUse hook, or AgentKit's
 // `approve` callback); `requiresApproval(def)` is the single test all three use.
-import { ACTIONS_STATUS_URL, buildStatus, resolveTool, toolDefinitions } from "../surface/index.js";
+import { readActionsStatusDoc, type StatusFetch, buildStatus, resolveTool, toolDefinitions } from "../surface/index.js";
 import type { ToolDef, Toolsets } from "../surface/index.js";
 import { coreActions } from "../actions/registry.js";
 import { approvalHints } from "../spec/index.js";
@@ -97,17 +97,8 @@ function errOf(tool: string, e: unknown): ToolEnvelope {
 async function readActionsStatus(opts: AdapterOptions): Promise<unknown | null> {
   const f = opts.fetch ?? (typeof globalThis.fetch === "function" ? globalThis.fetch : undefined);
   if (!f) return null;
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), opts.statusTimeoutMs ?? 3000);
-  try {
-    const res = await f(ACTIONS_STATUS_URL, { signal: ctrl.signal, headers: { accept: "application/json" } });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(t);
-  }
+  const r = await readActionsStatusDoc(f as unknown as StatusFetch, { timeoutMs: opts.statusTimeoutMs ?? 3000 });
+  return r.doc;
 }
 
 /** Builds the tool list and the dispatcher for one kit. Pure apart from the calls it makes. */
