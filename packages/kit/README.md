@@ -1,6 +1,6 @@
 # @satohub/kit
 
-**Unpublished. 0.1.0 preview.**
+**0.1.0 preview.**
 
 Sato Kit wraps the tools agents already use (viem, signers, x402) with a prepare -> execute
 contract: an action prepares an unsigned intent, a policy pre-flight explains any refusal,
@@ -18,6 +18,145 @@ It never holds funds and ships no keys.
   disclosed on every response, with a no-Sato-fee quote alongside; `venue: "direct"` skips Sato entirely.
 
 Contracts (`sato.action/v1`, `sato.policy/v1`, `sato.receipt/v1`) live in `src/spec` (see `VENDORED.md`).
+
+## Install
+
+```sh
+npm install @satohub/kit viem
+npx -y @satohub/kit@0.1 --help
+```
+
+Node 20 or later. `viem` is a peer; every framework SDK below is an optional peer, installed only
+if you use its subpath.
+
+## Honest limits
+
+- **Pre-flight, not enforcement.** `evaluatePreflight` runs before an intent is returned and names
+  each refused rule with its limit and the observed value. Once a key is in play the kit enforces
+  nothing: enforcement is the signer's (a CDP, Privy or Turnkey policy compiled from the same
+  `policy.json`, OWS's policy engine, or a Safe's owners). `viemLocalSigner` enforces only its
+  mainnet refusal.
+- **x402 execution scope.** `x402.prepare` reads what an x402 resource asks to be paid and returns a
+  priced, policy-checked intent. `execute` does not send x402 payments: it sends EVM transactions,
+  EIP-712 typed data (Safe proposals) and Solana transactions only. Pay through your x402 client.
+- **AgentKit's own analytics call.** AgentKit's `@CreateAction` decorator posts an invocation event
+  to `cca-lite.coinbase.com` on every invoke. Actions consumed through `fromAgentKitProvider` still
+  make that call; the kit neither blocks nor adds to it.
+- **Unknown prices refuse.** When a USD value cannot be read, a `max_usd_*` rule refuses with
+  `unknown_price` rather than guessing.
+- **Simulation is not a promise.** A passing simulation says what the chain answered at that block.
+
+## Action reference
+
+Generated from the registered descriptors by `node scripts/gen-actions-doc.mjs` (after
+`npm run build`); `test/readme-actions.test.ts` fails when this table drifts from the registry.
+"custody" is the descriptor's own answer to three `sato.custody/v1` questions. `toolset` says
+whether the tool is in the default MCP profile or only under `--toolsets all`.
+
+<!-- BEGIN GENERATED: actions (scripts/gen-actions-doc.mjs) -->
+
+### Registered actions
+
+| action id | tool name | kind | effects | custody | chains | toolset |
+| --- | --- | --- | --- | --- | --- | --- |
+| `chain.read` | `chain_read` | read | `read` | reads key: no; key leaves: no; moves funds: never | ethereum, sepolia, base, base-sepolia, arbitrum, arbitrum-sepolia, optimism, optimism-sepolia, polygon | default, all |
+| `swap.quote` | `swap_quote` | read | `quote` | reads key: no; key leaves: no; moves funds: never | ethereum, base, arbitrum, optimism, polygon | default, all |
+| `swap.prepare` | `swap_prepare` | prepare | `quote`, `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | ethereum, base, arbitrum, optimism, polygon | default, all |
+| `x402.prepare` | `x402_prepare` | prepare | `sign`, `pay` | reads key: no; key leaves: no; moves funds: with_approval | base, base-sepolia, ethereum, sepolia, polygon, arbitrum, optimism, solana, solana-devnet | default, all |
+| `erc8004.lookup` | `erc8004_lookup` | read | `read` | reads key: no; key leaves: no; moves funds: never | ethereum, base, arbitrum, optimism, polygon | all |
+| `tx.simulate` | `tx_simulate` | read | `simulate` | reads key: no; key leaves: no; moves funds: never | ethereum, sepolia, base, base-sepolia, arbitrum, arbitrum-sepolia, optimism, optimism-sepolia, polygon | all |
+| `token.approvals.list` | `token_approvals_list` | read | `read` | reads key: no; key leaves: no; moves funds: never | ethereum, sepolia, base, base-sepolia, arbitrum, arbitrum-sepolia, optimism, optimism-sepolia, polygon | all |
+| `token.approvals.revoke` | `token_approvals_revoke` | prepare | `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | ethereum, sepolia, base, base-sepolia, arbitrum, arbitrum-sepolia, optimism, optimism-sepolia, polygon | all |
+| `erc8004.register` | `erc8004_register` | prepare | `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | ethereum, base, arbitrum, optimism, polygon | all |
+| `bridge.quote` | `bridge_quote` | read | `quote` | reads key: no; key leaves: no; moves funds: never | ethereum, base, arbitrum, optimism, polygon | all |
+| `bridge.prepare` | `bridge_prepare` | prepare | `quote`, `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | ethereum, base, arbitrum, optimism, polygon | all |
+| `safe.info` | `safe_info` | read | `read` | reads key: no; key leaves: no; moves funds: never | ethereum, sepolia, base, base-sepolia, arbitrum, optimism, polygon | all |
+| `safe.propose` | `safe_propose` | prepare | `sign` | reads key: no; key leaves: no; moves funds: with_approval | ethereum, sepolia, base, base-sepolia, arbitrum, optimism, polygon | all |
+| `solana.read` | `solana_read` | read | `read` | reads key: no; key leaves: no; moves funds: never | solana, solana-devnet | all |
+| `solana.transfer` | `solana_transfer` | prepare | `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | solana, solana-devnet | all |
+| `solana.swap.quote` | `solana_swap_quote` | read | `quote` | reads key: no; key leaves: no; moves funds: never | solana | all |
+| `solana.swap.prepare` | `solana_swap_prepare` | prepare | `quote`, `sign`, `broadcast` | reads key: no; key leaves: no; moves funds: with_approval | solana | all |
+
+### Meta tools
+
+| tool name | kind | effects | toolset |
+| --- | --- | --- | --- |
+| `execute` | execute | `sign`, `broadcast` | default, all |
+| `status` | meta | `read` | default, all |
+| `actions_search` | meta | `read` | default, all |
+| `actions_describe` | meta | `read` | default, all |
+
+Default MCP profile, in order: `chain_read`, `swap_quote`, `swap_prepare`, `x402_prepare`, `execute`, `status`, `actions_search`, `actions_describe`.
+
+<!-- END GENERATED: actions -->
+
+Actions consumed from an AgentKit provider (`fromAgentKitProvider`) are not in this table: they
+are built at runtime from the provider you pass, and appear under toolset `all`.
+
+## Entry points
+
+| import | what it gives you |
+| --- | --- |
+| `@satohub/kit` | `createKit`, `coreActions`, the tool surface, config loader, everything below re-exported |
+| `@satohub/kit/spec` | the vendored contracts: `sato.action/v1`, `sato.policy/v1`, `sato.receipt/v1`, id rules, descriptor lint |
+| `@satohub/kit/policy` | `evaluatePreflight`; compilers `compileCdpPolicy`, `compilePrivyPolicy`, `compileTurnkeyPolicy` |
+| `@satohub/kit/signers` | `viemLocalSigner`, `owsSigner`, `cdpSigner`, `solanaLocalSigner`, `humanApprove` |
+| `@satohub/kit/intent` | intent store, HMAC intent ids (`loadOrCreateIntentSecret`, `verifyIntentId`) |
+| `@satohub/kit/receipts` | the hash-chained `sato.receipt/v1` log |
+| `@satohub/kit/actions` | every core action, descriptor and builder |
+| `@satohub/kit/ai-sdk` | `satoKitTools(kit, opts)` for the Vercel AI SDK |
+| `@satohub/kit/agentkit` | `satoKitActionProvider(kit, opts)` and `fromAgentKitProvider(provider, { chain })` |
+| `@satohub/kit/claude-agent-sdk` | `createSatoKitSdkServer(kit, opts)` + `requireApprovalHook()` |
+| `@satohub/kit/openai-agents` | `satoKitOpenAITools(kit, opts)` |
+| `@satohub/kit/langchain` | `satoKitLangChainTools(kit, opts)` |
+| `@satohub/kit/eliza` | `satoKitElizaPlugin(kit, opts)` (compatibility adapter, see below) |
+| `@satohub/kit/mcp` | the local MCP server (stdio) |
+| `@satohub/kit/cli` | the `sato-kit` CLI as a function |
+| `@satohub/kit/sato-os` | `attachToSatoOs`, `proposeIntent` |
+
+### Signers
+
+- `viemLocalSigner` — a key in this process. Fork/testnet by default; refuses mainnet chain ids
+  unless `allowMainnet: true` (not recommended). `generate: true` makes a throwaway in-memory key.
+- `owsSigner` — a structural adapter over an Open Wallet Standard account; OWS's policy engine
+  enforces. See `src/signers/OWS.md`.
+- `cdpSigner` — a structural adapter over a Coinbase CDP server account; CDP enforces its policies.
+  Pass a compiled policy as `nativePolicy` to carry it with the signer (the adapter does not register it).
+- `solanaLocalSigner` — local Solana signing for devnet and tests only; refuses any non-devnet
+  payload and a mainnet-beta RPC, with no mainnet switch.
+- `humanApprove(signer, approve)` — wraps any signer so a person approves each summary before it signs.
+
+### Policy compilers
+
+`compileCdpPolicy`, `compilePrivyPolicy` and `compileTurnkeyPolicy` turn one `sato.policy/v1` into
+the provider's native policy document. Each result lists what did not compile (`not_compiled`) with
+the reason, so a rule the provider cannot express is never silently dropped.
+
+### CLI
+
+```
+sato-kit read <action> --input '<json>'      run a read-only action
+sato-kit prepare <action> --input '<json>'   build an intent; nothing is signed
+sato-kit execute --intent <intent_id>        hand one prepared intent to the signer
+sato-kit mcp [--toolsets default|all]        local MCP server over stdio
+sato-kit doctor                              check config, Sato Status and template drift
+```
+
+Config comes from the working directory: `policy.json` (absent means the default policy, network
+`fork`), `.sato/` (intents, intent secret, receipts), `SATO_RPC_URL_<CHAIN>` per chain, and
+`SATO_SIGNER=viem-local-fork` (fork network only) for a local signer.
+
+### MCP server
+
+`npx -y @satohub/kit@0.1 mcp` runs a stdio MCP server (registry name `ai.satohub/kit`). The default
+profile is the eight tools listed above; `--toolsets all` adds every other registered action.
+Tools that sign carry `anthropic/requiresUserInteraction` in `_meta`.
+
+### Sato Status
+
+`status` and `sato-kit doctor` read the nightly per-action results (`sato.action-status/v1`)
+published by the templates repo. When that file cannot be read, the answer says so; nothing is
+filled in.
 
 ## Recommended .gitignore
 
