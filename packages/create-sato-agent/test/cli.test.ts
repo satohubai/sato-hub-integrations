@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, existsSync, rmSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
-import { main, parseArgs, detectAgent, canPrompt, USER_AGENT, type Io } from "../src/index.js";
+import { main, parseArgs, detectAgent, canPrompt, USER_AGENT, userAgent, type Io } from "../src/index.js";
 
 const FIXTURE = readFileSync(new URL("../../test/fixtures/templates.tar.gz", import.meta.url));
 
@@ -251,4 +251,16 @@ test("path traversal in server files is refused", async () => {
   assert.equal(await main(t.io), 1);
   assert.equal(JSON.parse(t.out()).error, "bad_path");
   t.cleanup();
+});
+
+test("SATO_USER_AGENT: used verbatim when set, default otherwise", async () => {
+  assert.equal(userAgent({}), USER_AGENT);
+  assert.equal(userAgent({ SATO_USER_AGENT: "" }), USER_AGENT);
+  assert.equal(userAgent({ SATO_USER_AGENT: "SatoHub-ci/1.0" }), "SatoHub-ci/1.0");
+  const t = mkIo(["swap usdc to eth on base", "--api", `${base}/api/create`, "--json", "--no-git", "--no-install"], { env: { SATO_USER_AGENT: "SatoHub-ci/1.0" } });
+  try {
+    const code = await main(t.io);
+    assert.equal(code, 0, t.out() + t.err());
+    assert.equal(seen.filter((s) => s.url === "/api/create").at(-1)!.ua, "SatoHub-ci/1.0");
+  } finally { t.cleanup(); }
 });

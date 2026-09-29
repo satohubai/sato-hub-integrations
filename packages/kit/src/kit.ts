@@ -47,7 +47,7 @@ import { ActionRefusedError } from "./actions/_util.js";
 import { computeIntentId, newNonce, paramsDigest, randomIntentSecret, verifyIntentId } from "./intent/hmac.js";
 import { memoryIntentStore } from "./intent/store.js";
 import { memoryReceiptLog } from "./receipts/log.js";
-import { KIT_USER_AGENT } from "./version.js";
+import { kitUserAgent } from "./version.js";
 
 /** simulateTx(unsigned, ctx) as exported by actions/tx_simulate.ts. */
 export type SimulateTx = (unsigned: UnsignedEvmTx, ctx: ActionContext) => Promise<SimulationResult>;
@@ -116,7 +116,7 @@ export function createKit(opts: KitOptions): Kit {
     solanaRpc: opts.solanaRpc,
     signer: opts.signer,
     policy,
-    userAgent: opts.userAgent ?? KIT_USER_AGENT,
+    userAgent: opts.userAgent ?? kitUserAgent(),
     fixtures: opts.fixtures,
     safeTxService: resolveSafeTxService(opts.safeTxService),
   };

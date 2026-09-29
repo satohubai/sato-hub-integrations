@@ -13,6 +13,11 @@ import { readTarGz } from "./tar.js";
 
 export const VERSION = "0.1.0";
 export const USER_AGENT = `create-sato-agent/${VERSION}`;
+/** `SATO_USER_AGENT` verbatim when set (Sato Hub's own CI runs), else USER_AGENT. For testing; leave unset. */
+export function userAgent(env: Record<string, string | undefined> = process.env): string {
+  const v = env.SATO_USER_AGENT;
+  return v && v.trim() ? v : USER_AGENT;
+}
 export const DEFAULT_API = "https://satohub.ai/api/create";
 /** The templates commit the --offline path copies from. Bumped by hand with each release. */
 export const TEMPLATES_SHA = "17df123a01734e007211105ec2445f5aabc7c590";
@@ -194,7 +199,7 @@ async function planOnline(opts: Options, io: Io, network: string, mainnetAccepte
   try {
     res = await f(opts.api, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json", "user-agent": USER_AGENT },
+      headers: { "content-type": "application/json", accept: "application/json", "user-agent": userAgent(io.env) },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60_000),
     });
@@ -229,7 +234,7 @@ async function planOffline(opts: Options, io: Io): Promise<Plan> {
   const url = io.tarballUrl ?? TEMPLATES_TARBALL_URL;
   let res: Response;
   try {
-    res = await f(url, { headers: { "user-agent": USER_AGENT }, signal: AbortSignal.timeout(120_000) });
+    res = await f(url, { headers: { "user-agent": userAgent(io.env) }, signal: AbortSignal.timeout(120_000) });
   } catch (e) {
     throw new CliError("network_error", `could not download the templates tarball: ${(e as Error).message}`);
   }

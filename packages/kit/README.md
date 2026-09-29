@@ -159,6 +159,12 @@ Tools that sign carry `anthropic/requiresUserInteraction` in `_meta`.
 published by the templates repo. When that file cannot be read, the answer says so; nothing is
 filled in.
 
+### User-Agent override
+
+Every request the kit makes (CLI, MCP server, `loadKitFromEnv`, and `createKit` without a
+`userAgent`) sends `@satohub/kit/<version>`. Setting `SATO_USER_AGENT` replaces it verbatim.
+This is for testing; leave it unset.
+
 ## Recommended .gitignore
 
 The file intent store and the intent HMAC secret live under `.sato/` by default

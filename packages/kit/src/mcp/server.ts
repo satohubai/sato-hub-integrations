@@ -30,7 +30,7 @@ import {
 import type { ToolDef, Toolsets } from "../surface/index.js";
 import { loadKitFromEnv } from "../config/index.js";
 import type { LoadKitOptions } from "../config/index.js";
-import { KIT_USER_AGENT, KIT_VERSION } from "../version.js";
+import { kitUserAgent, KIT_VERSION } from "../version.js";
 
 export const SERVER_NAME = "sato-kit";
 /** ~5K tokens at ~4 characters per token. */
@@ -102,7 +102,7 @@ async function fetchActionsStatus(f: KitFetch, url: string | undefined): Promise
   // with the 404-only fallback to the frozen main copy.
   const r = await readActionsStatusDoc(f as unknown as StatusFetch, {
     timeoutMs: STATUS_FETCH_TIMEOUT_MS,
-    headers: { "user-agent": KIT_USER_AGENT },
+    headers: { "user-agent": kitUserAgent() },
     ...(url ? { primaryUrl: url, fallbackUrl: null } : {}),
   });
   return r.doc;

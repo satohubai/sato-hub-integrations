@@ -5,7 +5,7 @@
 // Cold start matters (npx sato-kit --help must answer in well under 10 s), so
 // this file imports nothing heavy at the top: the config loader (viem), the
 // tool surface and the MCP server are loaded only by the command that needs them.
-import { KIT_VERSION } from "../version.js";
+import { KIT_VERSION, kitUserAgent } from "../version.js";
 // drift.ts imports only node:fs and node:path, so it is cheap to load eagerly for its formatter.
 import { driftLines } from "./drift.js";
 import type { DriftReport } from "./drift.js";
@@ -200,7 +200,7 @@ async function readActionsStatus(fetchFn: typeof fetch | undefined): Promise<{ d
   const f = fetchFn ?? globalThis.fetch;
   const r = await readActionsStatusDoc(f as never, {
     timeoutMs: DOCTOR_STATUS_TIMEOUT_MS,
-    headers: { "user-agent": `@satohub/kit/${KIT_VERSION}` },
+    headers: { "user-agent": kitUserAgent() },
   });
   if (r.doc === null) return { doc: null, reason: r.reason, url: r.url, source: null };
   const doc = r.doc as { schema?: unknown; actions?: unknown };
@@ -220,7 +220,7 @@ async function cmdDoctor(p: Parsed, io: CliIo): Promise<Out> {
   const { readTemplateDrift } = await import("./drift.js");
   const driftP = readTemplateDrift(io.cwd, (io.fetch ?? globalThis.fetch) as never, {
     timeoutMs: DOCTOR_DRIFT_TIMEOUT_MS,
-    userAgent: `@satohub/kit/${KIT_VERSION}`,
+    userAgent: kitUserAgent(),
   });
 
   let policy: Out;

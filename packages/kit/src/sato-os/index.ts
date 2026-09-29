@@ -16,7 +16,7 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { PreparedIntent } from "../spec/index.js";
-import { KIT_USER_AGENT } from "../version.js";
+import { KIT_USER_AGENT, kitUserAgent } from "../version.js";
 
 export const SATO_OS_CONFIG_FILE = "sato-os.json";
 export const SATO_OS_PROPOSAL_TOOL = "sato_os_create_action_proposal";
@@ -82,7 +82,7 @@ function trimBase(u: string): string {
 }
 
 function headers(token?: string): Record<string, string> {
-  const h: Record<string, string> = { "content-type": "application/json", accept: "application/json", "user-agent": KIT_USER_AGENT };
+  const h: Record<string, string> = { "content-type": "application/json", accept: "application/json", "user-agent": kitUserAgent() };
   if (token) h.authorization = `Bearer ${token}`;
   return h;
 }

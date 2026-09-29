@@ -79,6 +79,11 @@ A server refusal also carries `nearest` / `blocked` when the server sent them.
 (https://satohub.ai/status). A date there means it passed those checks that night;
 it is not a statement that the code is safe to run with real funds.
 
+## User-Agent override
+
+Requests send `create-sato-agent/<version>`. Setting `SATO_USER_AGENT` replaces it verbatim.
+This is for testing; leave it unset.
+
 ## Development
 
 ```sh
