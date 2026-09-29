@@ -75,3 +75,4 @@ export class SatoKitActionProvider extends ActionProvider<WalletProvider> {
 export function satoKitActionProvider(kit: Kit, opts: SatoKitActionProviderOptions = {}): SatoKitActionProvider {
   return new SatoKitActionProvider(kit, opts);
 }
+export * from "./agentkit-consume.js";
