@@ -157,6 +157,21 @@ export type ActionContext = {
   policy: SatoPolicy;
   userAgent: string;
   fixtures?: FixtureSource;
+  /** OPTIONAL (Phase 2 wave 3): resolved Safe Transaction Service settings (see safe/service.ts). */
+  safeTxService?: { apiKey?: string; baseUrl: Partial<Record<string, string>> };
+};
+
+/**
+ * Safe Transaction Service gateway settings. Nothing here is read from the
+ * environment unless the caller opts in with `apiKeyFromEnv`.
+ */
+export type SafeTxServiceOptions = {
+  /** API key for Safe's gateway, sent as `Authorization: Bearer <key>`. Never logged or put in a receipt. */
+  apiKey?: string;
+  /** When true and `apiKey` is unset, read the key from SAFE_API_KEY. Default false. */
+  apiKeyFromEnv?: boolean;
+  /** Gateway base URL per chain, replacing `https://api.safe.global/tx-service/<shortName>`. */
+  baseUrl?: Partial<Record<string, string>>;
 };
 
 export type ReadAction<I = unknown, O = unknown> = {
@@ -194,6 +209,8 @@ export type CreateKitOptions = {
   receipts?: ReceiptLog;
   fixtures?: FixtureSource;
   userAgent?: string;
+  /** OPTIONAL (Phase 2 wave 3): Safe Transaction Service API key and per-chain gateway base URLs. */
+  safeTxService?: SafeTxServiceOptions;
 };
 
 export type Kit = {

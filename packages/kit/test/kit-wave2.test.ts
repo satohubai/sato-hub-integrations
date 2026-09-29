@@ -120,12 +120,20 @@ test("typed_data with submit: signs, POSTs to the Safe Transaction Service, rece
   assert.equal((await receipts.verify()).ok, true);
 });
 
-test("typed_data without submit: signs only, no HTTP call, no safe_tx_hash", async () => {
-  const { kit, posted } = await typedSetup(false);
+test("typed_data without submit: signs only, no HTTP call, signature lands in typed_data_signature", async () => {
+  const { kit, posted, addr, td } = await typedSetup(false);
   const r = await kit.execute({ intent_id: (await kit.prepare("test.safe_propose", {})).intent_id });
   assert.equal(r.status, "executed");
   assert.equal(posted.length, 0);
   assert.equal("safe_tx_hash" in r, false);
+  assert.equal(r.tx_hash, null);
+  assert.match(String(r.typed_data_signature), /^0x[0-9a-f]{130}$/i);
+  assert.equal(validateReceipt(r).ok, true);
+  const { EIP712Domain: _d, ...types } = td.types as Record<string, Array<{ name: string; type: string }>>;
+  void _d;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const who = await (recoverTypedDataAddress as (p: any) => Promise<string>)({ domain: td.domain, types, primaryType: td.primaryType, message: td.message, signature: r.typed_data_signature });
+  assert.equal(who.toLowerCase(), addr.toLowerCase());
 });
 
 test("typed_data: a Safe Transaction Service error fails the intent and quotes the answer", async () => {

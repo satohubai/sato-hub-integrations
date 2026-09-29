@@ -31,7 +31,7 @@ export function safeProposalUrl(submit: NonNullable<UnsignedTypedData["submit"]>
 export async function proposeToSafeTxService(
   td: UnsignedTypedData,
   signature: `0x${string}`,
-  opts: { fetch: KitFetch; userAgent?: string; timeoutMs?: number },
+  opts: { fetch: KitFetch; userAgent?: string; timeoutMs?: number; /** Sent as Authorization: Bearer; never logged. */ apiKey?: string },
 ): Promise<`0x${string}`> {
   if (!td.submit || td.submit.kind !== "safe_tx_service") throw new Error("typed_data has no safe_tx_service submit block");
   if (td.primaryType !== "SafeTx") throw new Error(`safe_tx_service expects primaryType SafeTx, got ${td.primaryType}`);
@@ -50,6 +50,7 @@ export async function proposeToSafeTxService(
   body.origin = "sato-kit";
   const headers: Record<string, string> = { "content-type": "application/json" };
   if (opts.userAgent) headers["user-agent"] = opts.userAgent;
+  if (opts.apiKey) headers.authorization = `Bearer ${opts.apiKey}`;
   const res = await opts.fetch(safeProposalUrl(td.submit), {
     method: "POST",
     headers,
