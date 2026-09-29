@@ -164,3 +164,23 @@ blocker, but it is a decision.
 The Vercel AI SDK and LangChain.js have no community tool registry that accepts
 a GitHub-sourced pull request — both discover tools through npm and their own
 documentation. Publishing the packages is the whole of the distribution there.
+
+## Dify plugin (`dify/`)
+
+The Dify Marketplace takes a packaged `.difypkg` by pull request to
+[langgenius/dify-plugins](https://github.com/langgenius/dify-plugins), one
+file per PR, at `satohubai/satohub/satohub-<version>.difypkg`. The source
+lives here in `dify/`; the package is built with the official CLI
+([dify-plugin-daemon releases](https://github.com/langgenius/dify-plugin-daemon/releases)):
+
+```sh
+dify plugin package ./dify -o satohub-<version>.difypkg
+# validators, from langgenius/dify-marketplace-toolkit:
+python3 validator/validate-difypkg.py satohub-<version>.difypkg --pr-body-file pr_body.md
+# each tool once against production (needs dify_plugin>=0.9,<0.10 installed):
+cd dify && python -m tests.live_check
+```
+
+A version update bumps `version` and `meta.version` in `dify/manifest.yaml`
+and `PLUGIN_VERSION` in `dify/tools/satohub_api.py` together; the last one is
+the `dify-plugin-satohub/<version>` user-agent Sato Hub counts as a package.

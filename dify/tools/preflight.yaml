@@ -1,0 +1,42 @@
+identity:
+  name: preflight
+  author: satohubai
+  label:
+    en_US: Preflight a repo, package or endpoint
+description:
+  human:
+    en_US: "Before installing or connecting something, read what Sato Hub has on record for a GitHub repo, a package or an MCP endpoint: a verdict with one dated evidence line per check."
+  llm: "Use before installing a package or repo, or connecting an MCP endpoint, in an onchain or crypto agent. Returns verdict go | caution | no | unknown, the rule that decided it, and one evidence line per check naming the field it was read from and when. It is not a security review. `unknown` means Sato Hub holds no record of the target, not that anything is wrong with it. The endpoint lane asks Sato Hub to run one live MCP handshake against that URL."
+parameters:
+  - name: target_type
+    type: select
+    required: true
+    default: repo
+    options:
+      - value: repo
+        label:
+          en_US: GitHub repo
+      - value: package
+        label:
+          en_US: Package
+      - value: endpoint
+        label:
+          en_US: MCP endpoint (https)
+    label:
+      en_US: Target type
+    human_description:
+      en_US: "What the target is: a GitHub repo, a package name, or an https MCP endpoint URL."
+    llm_description: "One of: repo (GitHub owner/name or URL), package (package name; a trailing @version is ignored), endpoint (an https MCP endpoint URL)."
+    form: llm
+  - name: target
+    type: string
+    required: true
+    label:
+      en_US: Target
+    human_description:
+      en_US: "e.g. coinbase/agentkit, @goat-sdk/core, or https://example.com/mcp"
+    llm_description: "The repo (owner/name or https://github.com/owner/name), the package name, or the https MCP endpoint URL."
+    form: llm
+extra:
+  python:
+    source: tools/preflight.py

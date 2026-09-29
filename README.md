@@ -19,6 +19,7 @@ an agent can reach them without anyone writing a fetch wrapper first.
 | [`goat-plugin-satohub`](packages/goat-plugin-satohub) | GOAT SDK | `npm i goat-plugin-satohub` — Preflight + search only |
 | [`agentkit-satohub`](packages/agentkit-satohub) | Coinbase AgentKit | `npm i agentkit-satohub` — Preflight + search only |
 | [`satohub-core`](packages/satohub-core) | anything with `fetch` | `npm i satohub-core` |
+| [`dify/`](dify) | Dify | Dify Marketplace plugin `satohubai/satohub` — build plan, search, Preflight |
 | [`examples/claude-agent-sdk`](examples/claude-agent-sdk) | Claude Agent SDK | config only — no package |
 | [`examples/openai-agents-sdk`](examples/openai-agents-sdk) | OpenAI Agents SDK | config only — no package |
 | [`examples/base-ts-agent-starter`](examples/base-ts-agent-starter) | TypeScript on Base, viem | runnable starter: Preflight before install, a policy check, a quote. Holds no key |

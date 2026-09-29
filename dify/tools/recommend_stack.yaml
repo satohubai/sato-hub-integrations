@@ -1,0 +1,40 @@
+identity:
+  name: recommend_stack
+  author: satohubai
+  label:
+    en_US: Recommend an agent stack
+description:
+  human:
+    en_US: "Describe the onchain agent you want to build; get a stack of real Sato Hub listings (framework, wallet, x402 rail, data, MCP tooling), each with its Sato Score, install steps and a Preflight record."
+  llm: "Use when someone wants to build an onchain or crypto AI agent and needs to choose tools. Input the goal in plain words (e.g. 'an agent on Base that buys API data over x402'). Returns picks by slot, each with a 0-100 Sato Score (how open, active and verifiable the project is; NOT a safety or returns grade), install steps, a Preflight verdict with dated evidence (`unknown` = Sato Hub holds no record, not a problem), open questions and next steps. Cite each pick's sato_url. Read-only; it never prepares, signs or sends anything on a chain."
+parameters:
+  - name: goal
+    type: string
+    required: true
+    label:
+      en_US: Goal
+    human_description:
+      en_US: "What the agent should do, in plain words."
+    llm_description: "The build goal in plain words, up to 600 characters. Include the chain if known."
+    form: llm
+  - name: chain
+    type: string
+    required: false
+    label:
+      en_US: Chain
+    human_description:
+      en_US: "Optional chain, e.g. Base, Ethereum, Solana. Read from the goal when left empty."
+    llm_description: "Optional chain name, e.g. Base, Ethereum, Solana, Arbitrum. Leave empty to read it from the goal."
+    form: llm
+  - name: constraints
+    type: string
+    required: false
+    label:
+      en_US: Constraints
+    human_description:
+      en_US: "Optional comma-separated hard constraints, e.g. self-custody only, no API keys."
+    llm_description: "Optional comma-separated hard constraints to restate back, e.g. 'self-custody only,no API keys'."
+    form: llm
+extra:
+  python:
+    source: tools/recommend_stack.py
