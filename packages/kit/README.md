@@ -76,6 +76,24 @@ On the MCP server a refused prepare is a normal result whose
 `structuredContent.policy.refusals` names each rule; a failed call sets
 `isError` and carries its detail in `_meta["ai.satohub/error"]`.
 
+## Consuming an existing AgentKit provider (`@satohub/kit/agentkit`)
+
+`fromAgentKitProvider(provider, { chain })` turns each action of an AgentKit `ActionProvider` into kit actions. Read actions (a `get_`/`check_`/`list_`… name, or the names you pass as `reads`) become reads. Every other action runs the provider's own `invoke()` against a capturing wallet that records the transaction instead of sending it; that one transaction becomes an ordinary intent — simulated, put through the policy pre-flight, and sent once by `execute(intent_id)` with your signer.
+
+```ts
+import { erc20ActionProvider } from "@coinbase/agentkit";
+import { fromAgentKitProvider } from "@satohub/kit/agentkit";
+
+const { actions, not_consumable } = fromAgentKitProvider(erc20ActionProvider(), { chain: "base" });
+const kit = createKit({ ...opts, actions: [...coreActions(), ...actions] });
+```
+
+- An action that tries to send more than one transaction, or to sign a message, typed data or a raw transaction, is refused with the reason. Nothing was sent, so nothing is partly done.
+- A schema that cannot be made portable is listed in `not_consumable` with the lint's reasons rather than turned into a tool. An amount-named string with no pattern is narrowed to a decimal pattern and listed in `consumed[].tightened`.
+- The USD value of a consumed action is unknown, so a `max_usd_*` cap refuses it under `unknown_price`; `max_per_trade` reads the ERC-20 amount or the native value off the captured transaction.
+- AgentKit's own `@CreateAction` decorator posts an invocation analytics event to `cca-lite.coinbase.com` on every invoke; the kit does not block or add to it.
+- Consumed actions appear under toolsets `"all"` and through `actions_search` / `actions_describe`; the default MCP profile is unchanged.
+
 ## Sato OS hand-off (`@satohub/kit/sato-os`)
 
 In live mode an agent can send prepared intents to a self-hosted Sato OS for a person's approval and signing there, instead of signing locally. `attachToSatoOs({ baseUrl, name, goal, walletAddresses, chains })` attaches the agent and stores its scoped token in `.sato/sato-os.json` (mode 0600, gitignored; never returned or printed). `proposeIntent(prepared, { baseUrl, token })` files the intent (unsigned payload, summary, policy verdict, simulation, fee disclosure) through Sato OS's `sato_os_create_action_proposal` tool and returns `{ proposal_id, status }`. A refused or expired intent is never sent. Nothing in this path signs or broadcasts.
