@@ -48,7 +48,16 @@ export type Plan = {
 export function plan(policy: SatoPolicy, signer: string, network?: string): Plan {
   const not: NotCompiled[] = [];
   let chains = policy.allow_chains.map((c) => c.toLowerCase());
-  if (network) chains = chains.length === 0 || chains.includes(network) ? [network] : [];
+  if (network) {
+    network = network.toLowerCase();
+    if (chains.length > 0 && !chains.includes(network)) {
+      // An allowlist that excludes the target network is an explicitly empty
+      // scope: deny every transaction, never read it as "no allowlist".
+      not.push({ field: "allow_chains", reason: `The target network ${network} is outside allow_chains; no transaction is allowed.` });
+      return { groups: [], tokenCaps: [], not };
+    }
+    chains = [network];
+  }
   const unmapped = [...chains].sort().filter((c) => EVM_CHAIN_IDS[c] === undefined);
   if (unmapped.length) not.push({ field: "allow_chains", reason: `${signer} EVM policy has no chain id for: ${unmapped.join(", ")}.` });
   const inScope = (c: string) => chains.length === 0 || chains.includes(c);

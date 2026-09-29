@@ -120,7 +120,8 @@ test("property: a compiled allowlist never admits an address or chain the policy
       fc.constantFrom(...evm),
       fc.bigInt({ min: 0n, max: 10n ** 20n }),
       fc.option(fc.bigInt({ min: 0n, max: 10n ** 20n }), { nil: undefined }),
-      (chains, contracts, recipients, probe, probeChain, value, cap) => {
+      fc.option(fc.constantFrom(...evm), { nil: undefined }),
+      (chains, contracts, recipients, probe, probeChain, value, cap, network) => {
         const scope = chains.length ? chains : [probeChain];
         const ch = scope[0]!;
         const p = pol({
@@ -134,14 +135,33 @@ test("property: a compiled allowlist never admits an address or chain the policy
         const refused =
           (chains.length > 0 && !chains.includes(probeChain)) ||
           (listed.size > 0 && (!listed.has(probe) || probeChain !== ch)) ||
-          (cap !== undefined && probeChain === ch && value > cap);
+          (cap !== undefined && probeChain === ch && value > cap) ||
+          (network !== undefined && probeChain !== network);
         const tx = { to: probe, chain_id: EVM_CHAIN_IDS[probeChain]!, value };
+        const opts = network === undefined ? { address: ME } : { address: ME, network: network as Parameters<typeof compilePrivyPolicy>[1]["network"] };
         if (refused) {
-          assert.equal(privyAdmits(compilePrivyPolicy(p, { address: ME }).document.rules, tx), false);
-          assert.equal(turnkeyAdmits(compileTurnkeyPolicy(p, { address: ME }).document.policies, tx), false);
+          assert.equal(privyAdmits(compilePrivyPolicy(p, opts).document.rules, tx), false);
+          assert.equal(turnkeyAdmits(compileTurnkeyPolicy(p, opts).document.policies, tx), false);
         }
       },
     ),
     { numRuns: 500, seed: 42 },
   );
+});
+
+test("fail closed: target network outside a non-empty allow_chains -> deny-all", () => {
+  const p = pol({ allow_chains: ["base-sepolia"] });
+  const pr = compilePrivyPolicy(p, { address: ME, network: "sepolia" });
+  assert.ok(pr.document.rules.every((r) => r.action !== "ALLOW"));
+  assert.ok(pr.not_compiled.some((x) => x.field === "allow_chains" && /outside allow_chains/.test(x.reason)));
+  const tk = compileTurnkeyPolicy(p, { address: ME, network: "sepolia" });
+  assert.ok(tk.document.policies.every((x) => x.effect !== "EFFECT_ALLOW"));
+  for (const chain_id of [1, 11155111, 84532]) {
+    const tx = { to: A, chain_id, value: 0n };
+    assert.equal(privyAdmits(pr.document.rules, tx), false);
+    assert.equal(turnkeyAdmits(tk.document.policies, tx), false);
+  }
+  const p2 = pol({ allow_chains: ["base-sepolia"], allow_recipients: [`sepolia:${A}`, `base-sepolia:${B}`] });
+  assert.ok(compilePrivyPolicy(p2, { address: ME, network: "sepolia" }).document.rules.every((r) => r.action !== "ALLOW"));
+  assert.ok(compileTurnkeyPolicy(p2, { address: ME, network: "sepolia" }).document.policies.every((x) => x.effect !== "EFFECT_ALLOW"));
 });
