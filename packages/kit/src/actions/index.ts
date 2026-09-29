@@ -4,6 +4,10 @@ export { swapPrepareDescriptor, swapPrepareAction, buildSwapPrepare } from "./sw
 export { x402PrepareDescriptor, x402PrepareAction, buildX402Prepare, parseX402Requirements } from "./x402_prepare.js";
 export { erc8004LookupDescriptor, erc8004LookupAction, erc8004Lookup, ERC8004_IDENTITY_REGISTRY } from "./erc8004_lookup.js";
 export { txSimulateDescriptor, txSimulateAction, simulateTx } from "./tx_simulate.js";
+export { bridgeQuoteDescriptor, bridgeQuoteAction, bridgeQuote } from "./bridge_quote.js";
+export { bridgePrepareDescriptor, bridgePrepareAction, buildBridgePrepare } from "./bridge_prepare.js";
+export { BRIDGE_VENUES } from "./_bridge.js";
+export type { BridgeQuote, BridgeVenue } from "./_bridge.js";
 export { CORE_ACTIONS, coreActions } from "./registry.js";
 export { ActionInputError, ActionRefusedError } from "./_util.js";
 export { SATO_SWAP_URL, LIFI_QUOTE_URL, SWAP_VENUES, NO_SATO_FEE_STATEMENT } from "./_venues.js";

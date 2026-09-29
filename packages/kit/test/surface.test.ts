@@ -16,7 +16,7 @@ test("default profile is exactly the eight tools, in order", () => {
 });
 
 test("all adds erc8004_lookup and tx_simulate after the default eight", () => {
-  assert.deepEqual(all.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate"]);
+  assert.deepEqual(all.map((t) => t.name), [...DEFAULT_TOOL_NAMES, "erc8004_lookup", "tx_simulate", "bridge_quote", "bridge_prepare"]);
 });
 
 test("every tool passes the portable-schema lint (input and output) and the description lint", () => {

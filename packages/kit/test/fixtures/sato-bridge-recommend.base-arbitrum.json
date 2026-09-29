@@ -1,0 +1,103 @@
+{
+  "mode": "recommend",
+  "route_id": "rt_kvfz3ga7b3x6",
+  "venue": "relay",
+  "chain": "base",
+  "token_in": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "token_out": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+  "amount_in": "10000000",
+  "amount_out": "9950278",
+  "sato_fee_bps": 25,
+  "sato_fee_recipient": "0xcEE53Eb001d4d1743EF9df333Dcf45bC38622bE9",
+  "disclosure": "Sato Route takes 25 bps (0.25%) on the leg Relay charges for this trade type, charged inside the swap transaction by the aggregator's own router to the Sato fee address 0xcEE53Eb001d4d1743EF9df333Dcf45bC38622bE9. Stable-to-stable pairs are 3 bps; any volatile leg is 15 bps; cross-chain is 25 bps. Sato Hub does not sign this transaction, hold your funds or move them — you sign it. A failed, reverted or unsigned trade pays nothing. On Relay an app fee does not move on-chain to the recipient: it accrues as an off-chain USDC balance that must be claimed (docs.relay.link/features/app-fees). Until it is claimed it is receivable, not received, and an empty paidAppFees on the executed trade means it was not collected at all.",
+  "chosen_by": [
+    {
+      "signal": "Action",
+      "value": "swap 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 on base → 0xaf88d065e77c8cc2239327c5edb3a432268e5831 on arbitrum, chosen from 1 candidate venue(s) in the cross-chain lane. Cross-chain quotes are never ranked against same-chain ones.",
+      "source_field": "resources.resource_type, resources.tags, resources.chains_supported"
+    },
+    {
+      "signal": "Directory record",
+      "value": "No Sato Hub listing for this venue — it answered with a quote, but there is no record behind it. Unknown, not bad.",
+      "source_field": "resources.slug"
+    },
+    {
+      "signal": "Public activity",
+      "value": "No activity signal on record — unknown, not inactive.",
+      "source_field": "resources.last_activity_at"
+    },
+    {
+      "signal": "Observed record",
+      "value": "Fewer than 14 days of checks on record — no observed rate to rank on, which is unknown and not a bad record.",
+      "source_field": "resources.uptime_observed.success_rate_pct"
+    },
+    {
+      "signal": "Verification state",
+      "value": "No reproduced install on record. Listing verification: none on record.",
+      "source_field": "resources.deploy_spec.deploy_status, resources.verification_status"
+    },
+    {
+      "signal": "Lane",
+      "value": "A cross-chain quote: it settles on two chains through a filler or solver the caller does not choose. It was ranked only against other cross-chain quotes, never against a same-chain one.",
+      "source_field": "adapter.quote.lane"
+    },
+    {
+      "signal": "Quoted output",
+      "value": "9950278 in the output token's base units, quoted by the venue's own API at checked_at. A quote is not a fill.",
+      "source_field": "adapter.quote.amountOut"
+    }
+  ],
+  "unavailable_venues": [
+    {
+      "venue": "debridge",
+      "reason": "deBridge answered HTTP 400"
+    },
+    {
+      "venue": "lifi",
+      "reason": "not configured: LIFI_INTEGRATOR is unset, and a fee sent under an unregistered integrator collects nothing"
+    }
+  ],
+  "gate": {
+    "verdict": "no",
+    "refusals": [
+      {
+        "target": "venue",
+        "rule": "verdict_no",
+        "reason": "Preflight returned \"no\" for venue (https://api.relay.link/) under rule R2: The endpoint did not answer an MCP handshake (No MCP handshake (HTTP 404).)."
+      }
+    ],
+    "targets": {
+      "token_in": {
+        "verdict": "go",
+        "rule": "TOK0"
+      },
+      "token_out": {
+        "verdict": "caution",
+        "rule": "T6"
+      },
+      "venue": {
+        "verdict": "no",
+        "rule": "R2"
+      },
+      "recipient": {
+        "verdict": "go",
+        "rule": "RCPT1"
+      }
+    },
+    "policy_id": "default",
+    "policy_version": 1
+  },
+  "simulation": null,
+  "preconditions": [],
+  "tx": null,
+  "withheld": {
+    "reason": "mode \"recommend\" never returns calldata. the gate refused: venue: Preflight returned \"no\" for venue (https://api.relay.link/) under rule R2: The endpoint did not answer an MCP handshake (No MCP handshake (HTTP 404).).",
+    "rule": "E8"
+  },
+  "checked_at": "2026-09-29T03:13:33.736Z",
+  "caveat": "A route is a recommendation, chosen on the fields named in chosen_by as they read on checked_at. It is not a security review, a quality judgment, or a statement about price, execution or returns — a quote is a quote, not a fill. Sato Hub does not sign, hold or move funds; the caller signs the transaction it is handed.",
+  "lane": "cross-chain",
+  "receipt_url": null,
+  "non_custodial": "Sato Hub holds no keys, signs nothing and broadcasts nothing. Any transaction here is unsigned: the caller signs it or discards it.",
+  "_fixture": "Recorded from POST https://satohub.ai/api/swap/quote (chain_in base, chain_out arbitrum, mode recommend) on 2026-09-29; gate_result, preflight, alternatives, receipt and meta trimmed."
+}

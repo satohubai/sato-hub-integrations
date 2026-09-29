@@ -163,7 +163,7 @@ export function swapPrepareDescriptor(): ActionDescriptor {
   };
 }
 
-function feeText(q: SwapQuote): string {
+export function feeText(q: Pick<SwapQuote, "upstream_fees" | "venue">): string {
   const f = q.upstream_fees as { feeCosts?: unknown } | Record<string, unknown> | null;
   if (!f) return NO_SATO_FEE_STATEMENT;
   const parts: string[] = [];
