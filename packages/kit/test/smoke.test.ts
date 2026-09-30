@@ -10,8 +10,8 @@ import * as actions from "../src/actions/index.js";
 import { KIT_USER_AGENT, KIT_VERSION } from "../src/version.js";
 
 test("user agent shape", () => {
-  assert.equal(KIT_VERSION, "0.1.0");
-  assert.equal(KIT_USER_AGENT, "@satohub/kit/0.1.0");
+  assert.equal(KIT_VERSION, "0.1.1");
+  assert.equal(KIT_USER_AGENT, "@satohub/kit/0.1.1");
   assert.match(KIT_USER_AGENT, /^@satohub\/kit\/\d+\.\d+\.\d+$/);
 });
 

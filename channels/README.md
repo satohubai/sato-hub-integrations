@@ -6,7 +6,7 @@ anywhere.** Every submission below is a step the owner takes, from the account n
 
 ## Before any of these: what must be true
 
-1. **`@satohub/kit@0.1.0` is on npm.** Every draft installs or runs it by that exact version;
+1. **`@satohub/kit@0.1.1` is on npm.** Every draft installs or runs it by that exact version;
    today `npm view @satohub/kit` returns 404. The owner publishes it from `packages/kit`
    (see `PUBLISHING.md`).
 2. **It has been on npm for at least 7 days before the Scaffold-ETH extension is announced.**

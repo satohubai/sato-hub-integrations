@@ -38,7 +38,7 @@ export const DEFAULT_POLICY: SatoPolicy = (() => {
 })();
 
 export const FIXED_NOW = Date.UTC(2026, 8, 26, 12, 0, 0);
-export const TEST_UA = "@satohub/kit/0.1.0";
+export const TEST_UA = "@satohub/kit/0.1.1";
 
 /** A fake PublicClient: only the methods the actions call. Unset methods throw if touched. */
 export function fakeClient(impl: Partial<Record<"getBlockNumber" | "call" | "estimateGas" | "readContract" | "getBalance", (...a: any[]) => Promise<any>>>) {

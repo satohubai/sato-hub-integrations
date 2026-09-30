@@ -3,14 +3,14 @@ title: "Sato Kit Plugin"
 description: "Policy pre-flight and simulation for swaps via the Sato Kit CLI → send_calls on Base; the pre-flight explains refusals, Base Account approval is the signature."
 tags: [swap, dex, ai-agents, policy]
 name: sato-kit
-version: 0.1.0
+version: 0.1.1
 integration: cli-only
 chains: [base, base-sepolia]
 requires:
   shell: required
   allowlist: []
   externalMcp: null
-  cliPackage: "npx -y @satohub/kit@0.1.0"
+  cliPackage: "npx -y @satohub/kit@0.1.1"
 auth: none
 risk: [slippage, irreversible, local-exec]
 ---
@@ -29,8 +29,8 @@ Sato Kit is an open-source (MIT) TypeScript library and CLI that turns an onchai
 No install step. The CLI runs per call through `npx` with a pinned version:
 
 ```bash
-npx -y @satohub/kit@0.1.0 --version
-npx -y @satohub/kit@0.1.0 doctor --json
+npx -y @satohub/kit@0.1.1 --version
+npx -y @satohub/kit@0.1.1 doctor --json
 ```
 
 The CLI reads `./policy.json` (a `sato.policy/v1` file) from the working directory. Without one, the default policy is in force: network `fork`, which refuses every mainnet request. The user opts in to a real network by writing it into their own policy file; the agent must not write or edit that file on the user's behalf. A minimal Base mainnet policy the user can start from:
@@ -55,9 +55,9 @@ RPC for simulation: `SATO_RPC_URL_BASE` (and `SATO_RPC_URL_BASE_SEPOLIA` for rea
 
 | Capability | Harness with a shell (Claude Code, Codex, Cursor) | Chat-only surface (Claude.ai, ChatGPT) |
 |---|---|---|
-| Chain read (`chain.read`) | Shell: `npx -y @satohub/kit@0.1.0 read chain.read ...` | Stop |
-| Swap quote (`swap.quote`) | Shell: `npx -y @satohub/kit@0.1.0 read swap.quote ...` | Stop |
-| Swap prepare + pre-flight + simulation (`swap.prepare`) | Shell: `npx -y @satohub/kit@0.1.0 prepare swap.prepare ...` | Stop |
+| Chain read (`chain.read`) | Shell: `npx -y @satohub/kit@0.1.1 read chain.read ...` | Stop |
+| Swap quote (`swap.quote`) | Shell: `npx -y @satohub/kit@0.1.1 read swap.quote ...` | Stop |
+| Swap prepare + pre-flight + simulation (`swap.prepare`) | Shell: `npx -y @satohub/kit@0.1.1 prepare swap.prepare ...` | Stop |
 | Submit | Base MCP `send_calls` | Stop |
 
 This plugin is `cli-only`. On a surface with no shell, tell the user the Sato Kit pre-flight runs locally and needs a shell (Claude Code, Codex or Cursor), then stop. Do not improvise a `web_request` or paste workaround, and do not skip the pre-flight and submit a swap some other way under this plugin's name. For the general decision tree see [../references/custom-plugins.md](../references/custom-plugins.md).
@@ -69,7 +69,7 @@ Every command prints JSON with `--json`. Exit code `0` = ok, `2` = refused by po
 ### `read chain.read`
 
 ```bash
-npx -y @satohub/kit@0.1.0 read chain.read --json \
+npx -y @satohub/kit@0.1.1 read chain.read --json \
   --input '{"chain":"base","kind":"erc20_balance","address":"<wallet>","token":"<token address>"}'
 ```
 
@@ -78,7 +78,7 @@ npx -y @satohub/kit@0.1.0 read chain.read --json \
 ### `read swap.quote`
 
 ```bash
-npx -y @satohub/kit@0.1.0 read swap.quote --json \
+npx -y @satohub/kit@0.1.1 read swap.quote --json \
   --input '{"chain":"base","sell_token":"<address>","buy_token":"<address>","sell_amount":"<base units>","venue":"direct"}'
 ```
 
@@ -87,7 +87,7 @@ npx -y @satohub/kit@0.1.0 read swap.quote --json \
 ### `prepare swap.prepare`
 
 ```bash
-npx -y @satohub/kit@0.1.0 prepare swap.prepare --json \
+npx -y @satohub/kit@0.1.1 prepare swap.prepare --json \
   --input '{"chain":"base","sell_token":"<address>","buy_token":"<address>","sell_amount":"<base units>","taker":"<wallet>","slippage_bps":50,"venue":"direct"}'
 ```
 
@@ -164,7 +164,7 @@ The kit's own `execute` command and its local receipt log are not used on this p
 
 - **`slippage`** — a swap can fill worse than quoted. The pre-flight refuses a `slippage_bps` above the user's `max_slippage_bps`. Never raise `slippage_bps` to make a refused or failed swap go through; ask the user.
 - **`irreversible`** — a submitted transaction cannot be undone. Show `summary`, `simulation` and `fee_disclosure` before every `send_calls`, and submit only the exact intent the user approved.
-- **`local-exec`** — this plugin runs a third-party npm package (`@satohub/kit`, pinned to `0.1.0`) on the user's machine. The user is installing and running that code; tell them so the first time, and never replace the pinned version with `@latest`.
+- **`local-exec`** — this plugin runs a third-party npm package (`@satohub/kit`, pinned to `0.1.1`) on the user's machine. The user is installing and running that code; tell them so the first time, and never replace the pinned version with `@latest`.
 - **Pre-flight is not enforcement.** The kit's policy check explains refusals before a request is made; it does not control the key. Enforcement is the Base Account approval, which the user gives or withholds per request.
 - **Unknown USD value.** When the kit cannot price a trade and the policy says `unknown_verdict: "refuse"`, the pre-flight refuses with `unknown_price`. Do not estimate a price to get past it.
 
