@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sato-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, simulation and a receipt log. Fork by default.",
   "author": { "name": "Sato Hub", "url": "https://satohub.ai" },
   "homepage": "https://satohub.ai",

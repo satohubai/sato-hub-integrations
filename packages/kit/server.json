@@ -3,7 +3,7 @@
   "name": "ai.satohub/kit",
   "title": "Sato Kit",
   "description": "Prepare -> execute for onchain agent actions: policy pre-flight, simulation, receipt log.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://satohub.ai",
   "repository": {
     "url": "https://github.com/satohubai/sato-hub-integrations",
@@ -15,7 +15,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@satohub/kit",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "packageArguments": [
         { "type": "positional", "value": "mcp" }
       ],

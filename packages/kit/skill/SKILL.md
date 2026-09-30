@@ -4,7 +4,7 @@ description: Prepare and execute onchain agent actions (chain reads, swap quotes
 license: MIT
 compatibility: Requires Node.js 20 or later and npx. Network access to an EVM RPC (fork by default) and to the swap venue the caller chooses.
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   homepage: https://satohub.ai
   openclaw:
     requires:

@@ -1,6 +1,6 @@
 # @satohub/kit
 
-**0.1.0 preview.**
+**0.1.1 preview.**
 
 Sato Kit wraps the tools agents already use (viem, signers, x402) with a prepare -> execute
 contract: an action prepares an unsigned intent, a policy pre-flight explains any refusal,

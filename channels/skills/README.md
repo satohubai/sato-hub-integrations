@@ -27,7 +27,7 @@ Exact publish fields:
 | slug | `sato-kit` |
 | owner | `satohubai` |
 | display name | `Sato Kit` |
-| version | `0.1.0` (must equal `metadata.version` in the kit's `SKILL.md`) |
+| version | `0.1.1` (must equal `metadata.version` in the kit's `SKILL.md`) |
 | source repo | `satohubai/sato-hub-integrations` |
 | source ref | `main` |
 | source commit | the merge commit of the PR that last changed `clawhub/sato-kit/SKILL.md` |
@@ -42,7 +42,7 @@ Command (owner, signed in as `satohubai`; dry-run first):
 ```bash
 npx -y clawhub@<pinned version> login
 npx -y clawhub@<pinned version> publish channels/skills/clawhub/sato-kit \
-  --slug sato-kit --owner satohubai --version 0.1.0 \
+  --slug sato-kit --owner satohubai --version 0.1.1 \
   --source-repo satohubai/sato-hub-integrations --source-ref main \
   --source-commit <sha> --source-path channels/skills/clawhub/sato-kit --dry-run
 ```
@@ -68,7 +68,7 @@ sponsorship.
 
 ## What must be true first
 
-1. `@satohub/kit@0.1.0` is published on npm. Every command in the skill runs
+1. `@satohub/kit@0.1.1` is published on npm. Every command in the skill runs
    `npx -y @satohub/kit@0.1 …`; before publish those commands fail.
 2. `satohubai/sato-hub-integrations` is public (both registries read GitHub).
 3. `metadata.version` in the kit's `SKILL.md` equals the published kit version.
