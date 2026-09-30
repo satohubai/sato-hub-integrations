@@ -1,10 +1,10 @@
 ---
 name: sato-kit
 description: Prepare and execute onchain agent actions (chain reads, swap quotes, swaps, x402 payments) through the Sato Kit CLI with a policy pre-flight, simulation and a receipt log. Use when an agent needs to read chain state, quote or build a swap, or prepare an x402 payment and hand it to a signer only after a person has seen the summary. Fork network by default.
-version: 0.1.0
+version: 0.1.1
 compatibility: Requires Node.js 20 or later and npx. Network access to an EVM RPC (fork by default) and to the swap venue the caller chooses.
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   homepage: https://satohub.ai
   openclaw:
     requires:

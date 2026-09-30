@@ -1,6 +1,6 @@
 {
   "name": "@satohub/kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "mcpName": "ai.satohub/kit",
   "description": "Sato Kit: prepare -> execute for onchain agent actions, with a policy pre-flight, pluggable signers and a hash-chained receipt log. Preview, unpublished.",
   "license": "MIT",
