@@ -2,6 +2,25 @@
 
 Everything here is gated on an npm login this repo's build agent does not hold; everything short of that is done and checked in.
 
+## @satohub/kit 0.1.1 + satohub-core 0.2.2 (Sato Scan guard)
+
+`satohub-core` 0.2.2 adds `scanRecipient`, `sanitizeTransfers`, `resolveScanPolicy` and the opt-in
+`checkRecipientHosted` (all additive). The five framework packages depend on `^0.2.0`, so they pick it
+up without a release of their own. `@satohub/kit` 0.1.1 accepts the `scan` block in `policy.json`.
+Templates can declare `scan` only after they vendor kit 0.1.1.
+
+```sh
+git checkout main && git pull && npm install
+npm run typecheck && npm test                     # CI runs Node 20 and 22
+npm whoami || npm login
+npm publish --access public -w satohub-core       # 2FA
+npm publish --access public -w @satohub/kit       # 2FA
+npm view satohub-core version && npm view @satohub/kit version   # 0.2.2 and 0.1.1
+```
+
+Then set the release date in `packages/kit/CHANGELOG.md`, and tell the agent to re-vendor the kit
+into the templates and declare `scan` in their `policy_defaults`.
+
 ## Sato Kit 0.1.0 + create-sato-agent 0.1.0 (first release)
 
 Both names are unpublished. Publish the kit first: templates made by

@@ -177,7 +177,7 @@ test("doctor --json shape: versions, policy, signer, network, per-action status"
   assert.equal(o.ok, true);
   assert.equal(o.command, "doctor");
   const d = o.result;
-  assert.equal(d.kit_version, "0.1.0");
+  assert.equal(d.kit_version, "0.1.1");
   assert.match(d.node_version, /^\d+\.\d+\.\d+$/);
   assert.deepEqual(d.policy, { valid: true, path: null, source: "default" });
   assert.equal(d.network, "fork");

@@ -1,5 +1,19 @@
 # Changelog — @satohub/kit
 
+## 0.1.1 — policy.json accepts the Sato Scan `scan` block
+
+Release date: set on the day it is published to npm.
+
+- **`sato.policy/v1` `scan` block (additive).** `@satohub/kit/spec` re-vendors `policy.ts` from the
+  app: `parsePolicyFile` accepts an optional `scan` object (`lookalike`, `token`, `payto_changed`,
+  `treasury_recipients`, `hosted_check`), fills omitted fields from `SCAN_POLICY_DEFAULTS` and
+  refuses unknown keys or values by name. A policy without `scan` parses exactly as before. The
+  block is not part of `policyDigest`.
+- **Why a release.** 0.1.0 refuses any unknown property in `policy.json`, so a template can only
+  declare `scan` once it vendors this version. The checks themselves run in `satohub-core`
+  (`scanRecipient`, 0.2.2); the kit records the settings. `payto_changed` is recorded, not enforced
+  (README).
+
 ## 0.1.0 — first release
 
 Release date: set on the day it is published to npm.
