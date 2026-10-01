@@ -237,6 +237,17 @@ test("token: the listed contract passes; the same symbol on another contract is 
   assert.match(bad.limit, /contract address/);
 });
 
+test("token: real USDT that 0.2.2's table missed (BNB Chain BSC-USD, Base bridged USDT) passes, it is not refused as not canonical", () => {
+  for (const [chain, address] of [
+    ["BNB Chain", "0x55d398326f99059ff775485246999027b3197955"],
+    ["Base", "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"],
+  ] as const) {
+    assert.equal(canonicalToken(chain, address)?.family, "USDT", `${chain} ${address}`);
+    const r = scanRecipient({ chain, to: BASE_KNOWN, book: [BASE_KNOWN], token: { address, symbol: "USDT" } });
+    assert.notEqual(r.rule, "token.not_canonical", `${chain}: ${r.reason}`);
+  }
+});
+
 test("token: the caller's stated family wins over a clean-looking symbol, and the symbol never rescues a wrong address", () => {
   const r = scanRecipient({ chain: "Base", to: BASE_KNOWN, book: [BASE_KNOWN], token: { address: FOREIGN, symbol: "XYZ", family: "USDC" } });
   assert.equal(r.rule, "token.not_canonical");
