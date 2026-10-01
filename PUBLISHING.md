@@ -2,6 +2,20 @@
 
 Everything here is gated on an npm login this repo's build agent does not hold; everything short of that is done and checked in.
 
+## satohub-core 0.2.3 (stablecoin table: five real tokens 0.2.2 missed)
+
+0.2.2's table missed BNB Chain USDT (BSC-USD), Base's bridged USDT, Optimism's legacy USDT and
+Avalanche's USDT.e and USDC.e, so `scanRecipient` refused real payments in them as `token.not_canonical`.
+0.2.3 regenerates `src/scanTable.ts` from the app's `lib/stablecoins.ts` (each address read onchain on
+2026-10-01). Additive; the framework packages on `^0.2.0` pick it up with no release of their own.
+
+```sh
+git checkout main && git pull && npm install
+npm run typecheck && npm test
+npm publish --access public -w satohub-core       # 2FA
+npm view satohub-core version                     # 0.2.3
+```
+
 ## @satohub/kit 0.1.1 + satohub-core 0.2.2 (Sato Scan guard)
 
 `satohub-core` 0.2.2 adds `scanRecipient`, `sanitizeTransfers`, `resolveScanPolicy` and the opt-in
