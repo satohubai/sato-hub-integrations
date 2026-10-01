@@ -9,10 +9,10 @@
 // Addresses: EVM lowercase; Solana base58 exactly as issued (case-sensitive).
 
 /** The date every row below was last reconciled with its source. */
-export const SCAN_TABLE_AS_OF = "2026-09-28";
+export const SCAN_TABLE_AS_OF = "2026-10-01";
 
 /** sha256 of the table data (see scripts/gen-core-scan-table.mjs `dataString`); a mismatch means drift. */
-export const SCAN_TABLE_SHA256 = "7faf64127ce27659cd709f7df37b96f96880215b6a93fca19bb6d0146f4e434c";
+export const SCAN_TABLE_SHA256 = "547440f09b96c378ed54f491e3c071ea89e63fafa3ebb57cded34d2c609b0e4d";
 
 export type ScanTableKind = "issuer" | "bridged" | "peg";
 
@@ -53,6 +53,10 @@ export const SCAN_STABLES: readonly ScanTableRow[] = [
   ["Arbitrum", "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8", "USDC", "USDC", "bridged"],
   ["Optimism", "0x7f5c764cbc14f9669b88837ca1490cca17c31607", "USDC", "USDC", "bridged"],
   ["Base", "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca", "USDC", "USDbC", "bridged"],
+  ["Base", "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", "USDT", "USDT", "bridged"],
+  ["Optimism", "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58", "USDT", "USDT", "bridged"],
+  ["Avalanche", "0xc7198437980c041c805a1edcba50c1ce5db95118", "USDT", "USDT.e", "bridged"],
+  ["Avalanche", "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664", "USDC", "USDC.e", "bridged"],
   ["Ethereum", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "USDC", "USDC", "issuer"],
   ["Ethereum", "0xdac17f958d2ee523a2206206994597c13d831ec7", "USDT", "USDT", "issuer"],
   ["Ethereum", "0x1abaea1f7c830bd89acc67ec4af516284b1bc33c", "EURC", "EURC", "issuer"],
@@ -63,6 +67,7 @@ export const SCAN_STABLES: readonly ScanTableRow[] = [
   ["Tempo", "0x20c00000000000000000000014f22ca97301eb73", "USDT", "USDT0", "issuer"],
   ["Tempo", "0x20c000000000000000000000b9537d11c60e8b50", "USDC", "USDC.e", "bridged"],
   ["BNB Chain", "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", "USDC", "USDC", "peg"],
+  ["BNB Chain", "0x55d398326f99059ff775485246999027b3197955", "USDT", "USDT", "peg"],
   ["SKALE Base", "0x85889c8c714505e0c94b30fcfcf64fe3ac8fcb20", "USDC", "USDC.e", "bridged"],
   ["Abstract", "0x84a71ccd554cc1b02749b35d22f684cc8ec987e1", "USDC", "USDC.e", "bridged"],
 ];
