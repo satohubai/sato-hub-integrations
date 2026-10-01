@@ -1,0 +1,18 @@
+identity:
+  author: satohubai
+  name: satohub
+  label:
+    en_US: Sato Hub
+  description:
+    en_US: "Sato Hub is a daily-rebuilt index of the tools used to build onchain and crypto AI agents: frameworks, MCP servers, wallets, x402 rails and data tools. Each listing carries a 0-100 Sato Score of how open, active and verifiable it is (not a safety or returns grade). Read-only, no API key."
+  icon: icon.png
+  tags:
+    - search
+    - utilities
+tools:
+  - tools/recommend_stack.yaml
+  - tools/search_listings.yaml
+  - tools/preflight.yaml
+extra:
+  python:
+    source: provider/satohub.py

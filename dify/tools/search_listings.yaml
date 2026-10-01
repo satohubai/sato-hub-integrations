@@ -1,0 +1,80 @@
+identity:
+  name: search_listings
+  author: satohubai
+  label:
+    en_US: Search Sato Hub listings
+description:
+  human:
+    en_US: "Search Sato Hub's index of onchain-agent tooling (frameworks, MCP servers, wallets, x402 rails, data tools) by keyword, optionally narrowed to a chain or category."
+  llm: "Use to look up onchain or crypto AI agent tooling by keyword: a framework, MCP server, wallet SDK, x402 rail, data API or skill. Returns matching listings with category, chains, a 0-100 Sato Score (how open, active and verifiable the project is; NOT a safety or returns grade), liveness, whether Sato Hub reproduced the install, and the sato_url to cite. A project missing from the results is not evidence against it."
+parameters:
+  - name: query
+    type: string
+    required: true
+    label:
+      en_US: Query
+    human_description:
+      en_US: "Keywords, e.g. 'x402 python' or 'wallet mcp'. Every word must match."
+    llm_description: "One to three keywords naming the kind of tool or the project, e.g. 'x402 python', 'erc-8004', 'wallet mcp'. Every word must match, so fewer words find more."
+    form: llm
+  - name: chain
+    type: string
+    required: false
+    label:
+      en_US: Chain
+    human_description:
+      en_US: "Optional chain filter, e.g. Base, Ethereum, Solana."
+    llm_description: "Optional chain to filter by, spelled as Sato Hub does: Ethereum, Base, Solana, Arbitrum, Optimism, Polygon, Avalanche, BNB Chain, Bitcoin, Sui, Aptos, Near, Hyperliquid, Sei, Starknet, zkSync, Monad, TON, Tron, Robinhood Chain and others. Leave empty for all chains."
+    form: llm
+  - name: category
+    type: select
+    required: false
+    options:
+      - value: MCP
+        label:
+          en_US: MCP server
+      - value: Agent Framework
+        label:
+          en_US: Agent framework
+      - value: API / SDK
+        label:
+          en_US: API / SDK
+      - value: Wallet Infrastructure
+        label:
+          en_US: Wallet infrastructure
+      - value: Data Tool
+        label:
+          en_US: Data tool
+      - value: Developer Tool
+        label:
+          en_US: Developer tool
+      - value: Security Tool
+        label:
+          en_US: Security tool
+      - value: Skill Repo
+        label:
+          en_US: Agent skills
+      - value: Agent Marketplace
+        label:
+          en_US: Agent marketplace
+    label:
+      en_US: Category
+    human_description:
+      en_US: "Optional category filter."
+    llm_description: "Optional category: MCP, Agent Framework, API / SDK, Wallet Infrastructure, Data Tool, Developer Tool, Security Tool, Skill Repo or Agent Marketplace. Leave empty when unsure."
+    form: llm
+  - name: limit
+    type: number
+    required: false
+    default: 10
+    min: 1
+    max: 25
+    label:
+      en_US: Max results
+    human_description:
+      en_US: "How many listings to return (1-25)."
+    llm_description: "How many listings to return, 1 to 25. Default 10."
+    form: form
+extra:
+  python:
+    source: tools/search_listings.py
