@@ -1,0 +1,33 @@
+version: 0.0.1
+type: plugin
+author: satohubai
+name: satohub
+label:
+  en_US: Sato Hub
+description:
+  en_US: "Look up the onchain agent stack on Sato Hub: a build plan for a goal, listing search, and Preflight records for a repo, package or MCP endpoint. Read-only, no API key."
+icon: icon.png
+resource:
+  memory: 268435456
+  permission: {}
+plugins:
+  tools:
+    - provider/satohub.yaml
+meta:
+  version: 0.0.1
+  arch:
+    - amd64
+    - arm64
+  runner:
+    language: python
+    version: "3.12"
+    entrypoint: main
+  minimum_dify_version: 1.0.0
+network:
+  domains:
+    - satohub.ai
+created_at: 2026-09-28T21:11:18.908367-05:00
+privacy: PRIVACY.md
+repo: https://github.com/satohubai/sato-hub-integrations
+contact: satohub88@gmail.com
+verified: false
