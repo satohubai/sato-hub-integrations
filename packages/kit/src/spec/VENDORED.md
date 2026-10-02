@@ -26,3 +26,11 @@ The kit rebuilds and templates that vendor `@satohub/kit` need a new build to ca
 enforce it today), and `hosted_check` no longer says "reserved". No code, type or validation changed. The change to
 `lib/oda/policy.ts` since the last vendored release is the `scan` block plus these comments, and both are needed. Still
 byte-identical to the source (checked with `cmp`); the file has no relative imports.
+
+## Re-vendor note: licence (2026-10-01)
+
+The spec was licensed under Apache-2.0 (owner decision; copyright 2026 Prime Signal LLC). Source:
+`amateokap/onchain-agent` branch `claude/oda-apache-2.0`, commit `b7624861d0028d7c0fa93034ea186d93cec3f474`. `README.md` was re-copied
+(it gained §10 Licence) and `LICENSE` + `NOTICE` were added; all three are byte-identical to the source.
+No `.ts` file changed. The package root ships `LICENSE-ODA` (the same text) and a `NOTICE`, because
+`dist/spec` is Apache-2.0 code inside an MIT package.
