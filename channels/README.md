@@ -34,8 +34,11 @@ anywhere.** Every submission below is a step the owner takes, from the account n
      `policy` to the vocabulary list in `plugin-spec.md`), run their `/plugin-review` skill, open
      the PR from `satohubai`.
   3. Meanwhile the file works as a custom plugin: a user can load it next to the Base MCP skill.
-- Also note: Base's docs now say Base MCP documentation has moved to Coinbase Developer Platform
-  docs under the name "Wallet MCP". Re-check the spec location and name before submitting.
+- **Status 2026-10-02: shipped as a custom plugin, not submitted.** Outside plugin PRs have gone
+  unanswered since late June (17 open, none merged), so the plugin is offered self-serve. The steps
+  are in the kit README, section "Use with Base MCP". The server URL is now
+  `https://wallet-mcp.coinbase.com`, and the skill id stays `base-mcp`. Details:
+  `base-mcp/README.md`.
 
 ## 2. Scaffold-ETH 2 extension — `scaffold-eth-extension/`
 
