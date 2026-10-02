@@ -75,3 +75,7 @@ Object keys sorted, arrays in order, no whitespace, `undefined` properties omitt
 ## 9. Not in this draft
 
 Nightly verification (a separate profile), signer policy compilation, and the pre-flight evaluator's algorithm. Before 1.0 the draft needs two outside co-editors; it is not called a standard before independent implementations exist.
+
+## 10. Licence
+
+Copyright 2026 Prime Signal LLC. This draft, its JSON schemas and its reference code are licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
