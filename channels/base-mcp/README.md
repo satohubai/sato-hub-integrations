@@ -1,4 +1,23 @@
-# Base MCP plugin spec (draft, not submitted)
+# Base MCP plugin spec (custom plugin; not submitted to Base)
+
+## Status (2026-10-02)
+
+- **Not submitted, on purpose.** `base/skills` `CONTRIBUTING.md` limits contributions to the Base core
+  team. In practice the third-party plugins that were merged (KyberSwap, Bitrefill, GMGN, Clawnch,
+  o1.exchange) came in around June from those protocols' own teams. Since late June, 17 outside
+  plugin PRs and the outside plugin proposals filed as issues have had no merge and no reply.
+- **Shipped as a custom plugin instead.** Base MCP lets a user add a plugin next to the native ones.
+  The steps are in the kit README, section "Use with Base MCP". `npx skills add base/skills --skill
+  base-mcp` installs the skill at `.claude/skills/base-mcp/`, so `sato-kit.md` copied into its
+  `plugins/` folder keeps its relative links to Base's `references/` working.
+- **Rename.** Base MCP's server URL is now `https://wallet-mcp.coinbase.com` (base/skills #166,
+  2026-10-01). `https://mcp.base.org` still works for existing connections. The skill id stays
+  `base-mcp`. This plugin names no URL, so it needed no change.
+- **Spec checked again 2026-10-02.** `plugin-spec.md` has not changed since 2026-06-23 (#122), and
+  this file still follows its frontmatter and canonical section order.
+- **If Base opens to outside plugins:** the original path below still applies (ask first, then a
+  PR from `satohubai` with signed commits and their `/plugin-review` report).
+
 
 `sato-kit.md` is a Base MCP plugin written to the Base MCP plugin specification in
 [`base/skills`](https://github.com/base/skills), file
