@@ -10,6 +10,8 @@ and `solana_tx` payload kinds, `safe_tx_hash` / `signature`, `validateUnsignedPa
 Copied verbatim with ONE mechanical transform: relative import specifiers gained a
 `.js` suffix (`"./canonical"` -> `"./canonical.js"`), which Node ESM / `moduleResolution: NodeNext`
 requires. No other byte changed. Do not edit here: change the source, then re-vendor.
+A provenance note names the source only as "Sato Hub app (private)": no GitHub path, no personal
+name or email (`scripts/provenance.test.mjs` enforces this).
 
 ## Re-vendor note: `policy.ts` (2026-09-28)
 
@@ -30,7 +32,7 @@ byte-identical to the source (checked with `cmp`); the file has no relative impo
 ## Re-vendor note: licence (2026-10-01)
 
 The spec was licensed under Apache-2.0 (owner decision; copyright 2026 Prime Signal LLC). Source:
-Sato Hub app (private) branch `claude/oda-apache-2.0`, commit `b7624861d0028d7c0fa93034ea186d93cec3f474`. `README.md` was re-copied
+Sato Hub app (private), branch `claude/oda-apache-2.0`, commit `b7624861d0028d7c0fa93034ea186d93cec3f474`. `README.md` was re-copied
 (it gained §10 Licence) and `LICENSE` + `NOTICE` were added; all three are byte-identical to the source.
 No `.ts` file changed. The package root ships `LICENSE-ODA` (the same text) and a `NOTICE`, because
 `dist/spec` is Apache-2.0 code inside an MIT package.
