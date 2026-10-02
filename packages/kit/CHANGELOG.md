@@ -1,5 +1,12 @@
 # Changelog — @satohub/kit
 
+## Unreleased
+
+- **ODA licence.** The Onchain Action Descriptor spec is now licensed under Apache-2.0 (copyright
+  2026 Prime Signal LLC). `src/spec` carries the re-vendored README (§10 Licence), `LICENSE` and
+  `NOTICE`; the package ships `LICENSE-ODA` and a `NOTICE` saying `dist/spec` is Apache-2.0 while the
+  rest of the kit stays MIT. No code changed.
+
 ## 0.1.1 — policy.json accepts the Sato Scan `scan` block
 
 Release date: set on the day it is published to npm.
