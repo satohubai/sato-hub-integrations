@@ -250,6 +250,27 @@ const kit = createKit({ ...opts, actions: [...coreActions(), ...actions] });
 
 The Solana actions need a Solana RPC (`solanaRpc` in `createKit`). `solanaLocalSigner` is devnet-only and needs `@solana/kit` 8 or later installed next to the kit (`npm i @solana/kit@^8`); it is not declared as a peer so that installs holding an older `@solana/kit` (for example through AgentKit) still resolve.
 
+## Use with Base MCP (Coinbase Wallet MCP)
+
+Base MCP, now served at `https://wallet-mcp.coinbase.com`, signs with your Base Account. The kit's
+Base MCP plugin runs the policy pre-flight and the simulation in your shell first, then hands Base
+MCP the unsigned call for you to approve in Base Account. It is a custom plugin: Base does not list,
+maintain or endorse it.
+
+In a harness with a shell (Claude Code shown; Base's install steps cover Codex and Cursor):
+
+```sh
+claude mcp add --transport http base-mcp https://wallet-mcp.coinbase.com
+npx skills add base/skills --skill base-mcp
+curl -fsSL -o .claude/skills/base-mcp/plugins/sato-kit.md \
+  https://raw.githubusercontent.com/satohubai/sato-hub-integrations/main/channels/base-mcp/sato-kit.md
+```
+
+Then write your own `policy.json` (the plugin file has a starting point; without one the default
+policy refuses every mainnet request), set `SATO_RPC_URL_BASE`, and ask for the plugin by name:
+"Use the Sato Kit plugin to swap 5 USDC for WETH on Base." Base routes to a plugin only when you
+name it. Chat-only surfaces (Claude.ai, ChatGPT) cannot run the kit, and the plugin says so and stops.
+
 ## Not included: Stripe MPP
 
 `mpp.prepare` is not built. Its client (`mppx`) is pre-1.0 with breaking changes in minor releases, and its payment methods do not map onto one unsigned transaction the kit's signer executes. Reasons and sources: [docs/mpp-research.md](docs/mpp-research.md).
