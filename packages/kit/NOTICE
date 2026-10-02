@@ -1,0 +1,6 @@
+@satohub/kit
+Copyright (c) 2026 Sato Hub. Licensed under the MIT License (see LICENSE).
+
+This package includes the Onchain Action Descriptor (ODA) reference code
+(src/spec, compiled to dist/spec), Copyright 2026 Prime Signal LLC,
+licensed under the Apache License, Version 2.0 (see LICENSE-ODA).

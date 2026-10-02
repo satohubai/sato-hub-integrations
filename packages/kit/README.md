@@ -172,7 +172,7 @@ The file intent store and the intent HMAC secret live under `.sato/` by default
 .sato/
 ```
 
-License: MIT
+License: MIT. The bundled Onchain Action Descriptor code (`dist/spec`) is Apache-2.0, copyright 2026 Prime Signal LLC: see `LICENSE-ODA` and `NOTICE`.
 
 ## `sato-kit doctor`: template drift
 
