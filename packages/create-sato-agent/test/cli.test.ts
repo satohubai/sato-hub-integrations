@@ -158,6 +158,19 @@ test("--network mainnet --i-accept-mainnet-risk sends mainnet_risk_accepted", as
   t.cleanup();
 });
 
+test("--chain solana is sent to the engine; --chain solana-devnet is refused before any request", async () => {
+  const t = mkIo(["goal", "--chain", "solana", "--dry-run", "--json", "--api", `${base}/api/create`]);
+  assert.equal(await main(t.io), 0, t.out());
+  assert.equal(seen.filter((s) => s.url === "/api/create").at(-1)!.body.chain, "solana");
+  t.cleanup();
+  const before = seen.length;
+  const bad = mkIo(["goal", "--chain", "solana-devnet", "--json", "--api", `${base}/api/create`]);
+  assert.equal(await main(bad.io), 2);
+  assert.equal(JSON.parse(bad.out()).rule, "create.chain_unknown");
+  assert.equal(seen.length, before, "no request was made");
+  bad.cleanup();
+});
+
 test("server refusal → exit 2 with the rule and nearest", async () => {
   const t = mkIo(["goal", "--framework", "eliza", "--json", "--api", `${base}/api/create`]);
   assert.equal(await main(t.io), 2);

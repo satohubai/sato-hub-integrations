@@ -22,7 +22,7 @@ Sato Hub does not store it. Requests carry the user agent `create-sato-agent/0.1
 | Flag | Meaning |
 |---|---|
 | `--framework <fw>` | `plain-ts` · `agentkit` · `eliza` · `ai-sdk` · `claude-agent-sdk` · `openai-agents` (no template → refusal with the nearest ones) |
-| `--chain <chain>` | `base` · `base-sepolia` |
+| `--chain <chain>` | `base` · `base-sepolia` · `solana` |
 | `--network <net>` | `fork` (default) · `testnet` · `mainnet` |
 | `--template <id>` | pick a template by id |
 | `--dir <path>` | target directory (default: slug of the template id). A non-empty directory is refused. |
