@@ -11,11 +11,11 @@ import { dirname, isAbsolute, join, normalize, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
 import { readTarGz } from "./tar.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 export const USER_AGENT = `create-sato-agent/${VERSION}`;
 export const DEFAULT_API = "https://satohub.ai/api/create";
 /** The templates commit the --offline path copies from. Bumped by hand with each release. */
-export const TEMPLATES_SHA = "63fc38a9f7926abd4b19a7dba120f61f4fd26b1c";
+export const TEMPLATES_SHA = "fe1b4cbf7dca74e8daed2035f841e97f18b9f707";
 export const TEMPLATES_TARBALL_URL = `https://codeload.github.com/satohubai/sato-agent-templates/tar.gz/${TEMPLATES_SHA}`;
 export const DEFAULT_OFFLINE_TEMPLATE = "base-guarded-trader";
 
