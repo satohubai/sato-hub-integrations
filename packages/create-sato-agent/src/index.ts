@@ -20,7 +20,7 @@ export const TEMPLATES_TARBALL_URL = `https://codeload.github.com/satohubai/sato
 export const DEFAULT_OFFLINE_TEMPLATE = "base-guarded-trader";
 
 export const FRAMEWORKS = ["plain-ts", "agentkit", "eliza", "ai-sdk", "claude-agent-sdk", "openai-agents"] as const;
-export const CHAINS = ["base", "base-sepolia"] as const;
+export const CHAINS = ["base", "base-sepolia", "solana"] as const;
 export const NETWORKS = ["fork", "testnet", "mainnet"] as const;
 
 /**
@@ -280,7 +280,7 @@ Usage: create-sato-agent "<goal>" [options]
        npm create sato-agent -- "<goal>" [options]
 
   --framework <fw>          plain-ts | agentkit | eliza | ai-sdk | claude-agent-sdk | openai-agents
-  --chain <chain>           base | base-sepolia
+  --chain <chain>           base | base-sepolia | solana
   --network <net>           fork (default) | testnet | mainnet
   --template <id>           pick a template by id
   --dir <path>              target directory (default: slug of the template id); must be empty

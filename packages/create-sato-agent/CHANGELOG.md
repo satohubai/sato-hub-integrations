@@ -1,5 +1,10 @@
 # Changelog — create-sato-agent
 
+## Unreleased
+
+- `--chain solana` is accepted and sent to `POST /api/create` (the engine answers it with the Solana template once
+  `satohubai/sato-agent-templates` lists one on its pinned ref). No version bump here; publishing is a separate step.
+
 ## 0.1.0 — first release
 
 Release date: 2026-09-29.
