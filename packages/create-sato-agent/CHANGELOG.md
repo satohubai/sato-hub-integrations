@@ -1,9 +1,12 @@
 # Changelog — create-sato-agent
 
-## Unreleased
+## 0.1.1
 
-- `--chain solana` is accepted and sent to `POST /api/create` (the engine answers it with the Solana template once
-  `satohubai/sato-agent-templates` lists one on its pinned ref). No version bump here; publishing is a separate step.
+Release date: 2026-10-09.
+
+- `--chain solana` is accepted and sent to `POST /api/create`; a Solana goal gets the `solana-guarded-swapper` template
+  (simulates every transaction, stops at an unsigned one, `npm run preflight` reads Sato Hub's build receipts from Solana).
+- `--offline` copies templates pinned at the commit that adds `solana-guarded-swapper` (nightly green).
 
 ## 0.1.0 — first release
 
